@@ -1,14 +1,53 @@
 import React, { useEffect, useRef } from 'react';
 import Player from '../Game/Player';
 import BulletManager from '../Game/BulletManager';
+import io from 'socket.io-client';
 
 const GameCanvas = () => {
   const canvasRef = useRef(null);
   const player = new Player();
   const bulletManager = new BulletManager();
   let shootingInterval = null;
+  const socket = useRef(null); // Socket.IO client reference
+
+  // Estado para otros jugadores
+  const players = {};
 
   useEffect(() => {
+    // Inicializar socket
+    socket.current = io('http://localhost:5000');
+
+    // Recibir la lista de jugadores actuales al conectar
+    socket.current.on('currentPlayers', (currentPlayers) => {
+      Object.keys(currentPlayers).forEach((id) => {
+        if (id !== socket.current.id) {
+          players[id] = currentPlayers[id];
+        }
+      });
+    });
+
+    // Cuando se conecte un nuevo jugador
+    socket.current.on('newPlayer', (data) => {
+      players[data.id] = { x: data.x, y: data.y };
+    });
+
+    // Escuchar el movimiento de otros jugadores
+    socket.current.on('playerMoved', (data) => {
+      if (players[data.id]) {
+        players[data.id] = { x: data.x, y: data.y };
+      }
+    });
+
+    // Escuchar el disparo de otros jugadores
+    socket.current.on('playerShot', (data) => {
+      bulletManager.shoot(data.x, data.y, data.direction);
+    });
+
+    // Escuchar cuando un jugador se desconecta
+    socket.current.on('playerDisconnected', (data) => {
+      delete players[data.id];
+    });
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
 
@@ -23,7 +62,7 @@ const GameCanvas = () => {
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Dibujar el punto en el centro del canvas
+      // Dibujar el punto en el centro del canvas (jugador principal)
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
       ctx.fillStyle = 'black';
@@ -31,8 +70,19 @@ const GameCanvas = () => {
       ctx.arc(centerX, centerY, 10, 0, Math.PI * 2);
       ctx.fill();
 
-      // Dibujar las balas
+      // Dibujar las balas del jugador principal
       bulletManager.drawBullets(ctx, { x: player.x, y: player.y });
+
+      // Dibujar a otros jugadores
+      ctx.fillStyle = 'blue';
+      for (const id in players) {
+        const otherPlayer = players[id];
+        const relativeX = centerX + (otherPlayer.x - player.x);
+        const relativeY = centerY + (otherPlayer.y - player.y);
+        ctx.beginPath();
+        ctx.arc(relativeX, relativeY, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       // Opcional: Dibujar un "grid" para mostrar el desplazamiento del mundo
       ctx.strokeStyle = '#ccc';
@@ -55,10 +105,18 @@ const GameCanvas = () => {
       player.move(e.key);
       draw();
 
+      // Enviar el movimiento del jugador al servidor
+      socket.current.emit('playerMove', { x: player.x, y: player.y });
+
       // Iniciar el disparo continuo si hay una dirección de movimiento y aún no se está disparando
       if ((player.direction.x !== 0 || player.direction.y !== 0) && !shootingInterval) {
         shootingInterval = setInterval(() => {
           bulletManager.shoot(player.x + canvas.width / 2, player.y + canvas.height / 2, player.direction);
+          socket.current.emit('playerShoot', {
+            x: player.x + canvas.width / 2,
+            y: player.y + canvas.height / 2,
+            direction: player.direction,
+          });
           draw();
         }, 500); // Dispara cada 500ms
       }
@@ -102,6 +160,7 @@ const GameCanvas = () => {
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('resize', resizeCanvas);
       if (shootingInterval) clearInterval(shootingInterval);
+      if (socket.current) socket.current.disconnect();
     };
   }, []);
 
