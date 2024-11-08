@@ -1,0 +1,92 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+    background-color: #000;
+}
+  
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* Allow interaction with other elements */
+}
+  
+.home-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+.image-background {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    width: 600px; /* Adjust width and height as needed */
+    height: 600px;
+    background-image: url('../assets/images/webrraBACK.png'); /* Path to your image */
+    background-size: cover;
+    background-position: center;
+    transform: translate(-50%, -50%);
+    z-index: 5; /* Ensure it's above the canvas */
+    pointer-events: none; /* Allow interactions with other elements */
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.1); /* Slightly larger */
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+  
+.start-button {
+    position: absolute;
+    z-index: 10;
+    left: 51%;
+    top: 90%;
+    transform: translate(-50%, -50%);
+    width: 200px; /* Adjust to match image */
+    height: 100px; /* Adjust to match image */
+    background-image: url('../assets/images/botonSTART.png'); /* Path to your button image */
+    background-size: cover;
+    background-position: center;
+    background-color: transparent; /* Ensures no background color */
+    border: none;
+    cursor: pointer;
+    outline: none;
+    animation: pulse 1.5s infinite; /* Apply pulsing animation */
+}
+
+.start-button:hover {
+    opacity: 0.8; /* Slightly decrease opacity on hover */
+}
+.falling-image {
+    position: absolute;
+    top: -64px; /* Start slightly off-screen */
+    pointer-events: none; /* Allows clicks to pass through */
+    z-index: 3;
+  }
+/* Estilo para el texto parpadeante */
+.blinking-text {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 24px;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    color: white;
+    animation: blink-animation 1s steps(5, start) infinite;
+  }
+  
+  /* Animación de parpadeo */
+  @keyframes blink-animation {
+    50% {
+      visibility: hidden;
+    }
+  }
+  

@@ -13,6 +13,9 @@
     "react-router-dom": "^6.27.0",
     "react-scripts": "5.0.1",
     "socket.io-client": "^4.8.0",
+    "three": "^0.134.0",
+    "three-bas": "^3.0.0",
+    "three-orbitcontrols": "^2.110.2",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
