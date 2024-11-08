@@ -6,7 +6,7 @@ import PIST from '../assets/images/PIST.png';
 import ESP from '../assets/images/ESP.png';
 import ESPF from '../assets/images/ESPF.png';
 import MSHOME from '../sounds/MSHOME.mp3'; 
-import '../styles/pixel.css'; // El archivo con la tipografía en píxeles
+import '../styles/pixel.css'; 
 
 const Home = () => {
   const [audioPlayed, setAudioPlayed] = useState(false);
@@ -234,7 +234,7 @@ const Home = () => {
   return (
     <div className="home-container">
       <div className="image-background"></div>
-      <Link to="/game">
+      <Link to="/menu">
         <button className="start-button"></button>
       </Link>
       <canvas id="canvas-club"></canvas>

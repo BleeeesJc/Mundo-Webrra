@@ -1,0 +1,62 @@
+/* Estilo general del contenedor */
+.menu-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra el contenido horizontalmente */
+    justify-content: center; /* Centra el contenido verticalmente */
+    background-color: black;
+    height: 100vh;
+}
+  
+/* Estilo de texto pixelado */
+.menu-text {
+    font-size: 32px; /* Tamaño de texto más grande */
+    color: #ffffff;
+    font-family: 'Press Start 2P', cursive;
+    margin-bottom: 40px;
+}
+  
+/* Contenedor de selección de personajes */
+.character-selection {
+    display: flex;
+    gap: 40px; /* Espacio entre los contenedores de personajes */
+}
+  
+/* Estilo para cada tarjeta de personaje */
+.character-card {
+    background-color: #333;
+    border-radius: 15px;
+    padding: 20px;
+    width: 300px; /* Tamaño más grande */
+    height: 300px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer; /* Hace que se vea como un botón */
+    transition: transform 0.3s, box-shadow 0.3s;
+    z-index: 5;
+
+}
+
+/* Efecto de brillo y aumento de tamaño al pasar el cursor */
+.character-card:hover {
+    transform: scale(1.05); /* Aumenta el tamaño ligeramente */
+    box-shadow: 0 0 20px 10px rgba(229, 20, 237, 0.7); /* Brillo */
+}
+  
+/* Imagen de cada personaje */
+.character-image {
+    width: 280px; /* Tamaño más grande */
+    height: 280px;
+    border-radius: 15px;
+}
+  
+/* Nombre del personaje */
+.character-name {
+    margin-top: 12px;
+    font-size: 16px;
+    color: #e514ed;
+    font-family: 'Press Start 2P', cursive;
+}
