@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'; // Para la redirección
 import '../styles/MenuPer.css';
 import '../styles/pixel.css';
 import HAMILTON from '../assets/images/HAMILTON.png';
+import GOYO from '../assets/images/GOYO.png';
 import DP from '../assets/images/DP.png';
 import AMT from '../assets/images/AMT.png';
 import PIST from '../assets/images/PIST.png';
@@ -91,8 +92,8 @@ const MenuPer = () => {
           onClick={playSound}
           onDoubleClick={handleDoubleClick}
         >
-          <img src={DP} alt="Otro Personaje" className="character-image" />
-          <div className="character-name">Otro Personaje</div>
+          <img src={GOYO} alt="GOYO" className="character-image" />
+          <div className="character-name">GOYO</div>
         </div>
       </div>
     </div>
