@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Para la redirección
-import '../styles/MenuPer.css';
+import '../styles/MenuMap.css';
 import '../styles/pixel.css';
-import HAMILTON from '../assets/images/HAMILTON.png';
-import GOYO from '../assets/images/GOYO.png';
-import DP from '../assets/images/DP.png';
+import DESIERTO from '../assets/images/DESMAP.png';
+import GLACIAR from '../assets/images/GLAMAP.png';
+import CAMPO from '../assets/images/CAMPOMAP.png';
 import AMT from '../assets/images/AMT.png';
 import PIST from '../assets/images/PIST.png';
 import ESP from '../assets/images/ESP.png';
@@ -64,7 +64,7 @@ const MenuPer = () => {
   };
 
   const handleDoubleClick = () => {
-    navigate('/menuM');
+    navigate('/game');
   };
 
   return (
@@ -76,24 +76,24 @@ const MenuPer = () => {
           onClick={playSound}
           onDoubleClick={handleDoubleClick}
         >
-          <img src={HAMILTON} alt="Hamilton" className="character-image" />
-          <div className="character-name">HAMILTON</div>
+          <img src={DESIERTO} alt="DESIERTO" className="character-image" />
+          <div className="character-name">DESIERTO DEL DESTINO</div>
         </div>
         <div
           className="character-card"
           onClick={playSound}
           onDoubleClick={handleDoubleClick}
         >
-          <img src={DP} alt="DP" className="character-image" />
-          <div className="character-name">DPNEITOR</div>
+          <img src={GLACIAR} alt="GLACIAR" className="character-image" />
+          <div className="character-name">GLACIARES FANTASMAS</div>
         </div>
         <div
           className="character-card"
           onClick={playSound}
           onDoubleClick={handleDoubleClick}
         >
-          <img src={GOYO} alt="GOYO" className="character-image" />
-          <div className="character-name">GOYO</div>
+          <img src={CAMPO} alt="CAMPO" className="character-image" />
+          <div className="character-name">CAMPO ETERNO</div>
         </div>
       </div>
     </div>
