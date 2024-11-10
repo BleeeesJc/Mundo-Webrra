@@ -1,26 +1,33 @@
+
 class Tiles {
-    constructor(imageSrc) {
-      this.image = new Image();
-      this.image.src = imageSrc;
-      this.isLoaded = false;
-  
-      this.image.onload = () => {
-        this.isLoaded = true;
-      };
+    constructor(tileImages) {
+      this.tiles = tileImages.map(src => {
+        const img = new Image();
+        img.src = src;
+        img.isLoaded = false;
+        img.onload = () => (img.isLoaded = true);
+        return img;
+      });
     }
   
-    draw(ctx, canvasWidth, canvasHeight, offsetX, offsetY) {
-      if (!this.isLoaded) return;
+    draw(ctx, canvasWidth, canvasHeight, offsetX, offsetY, mapMatrix) {
+      const tileWidth = this.tiles[0].width;
+      const tileHeight = this.tiles[0].height;
   
-      const tileWidth = this.image.width;
-      const tileHeight = this.image.height;
+      for (let row = 0; row < mapMatrix.length; row++) {
+        for (let col = 0; col < mapMatrix[row].length; col++) {
+          const tileIndex = mapMatrix[row][col];
+          const tile = this.tiles[tileIndex];
   
-      for (let x = -tileWidth + (offsetX % tileWidth); x < canvasWidth; x += tileWidth) {
-        for (let y = -tileHeight + (offsetY % tileHeight); y < canvasHeight; y += tileHeight) {
-          ctx.drawImage(this.image, x, y);
+          if (tile && tile.isLoaded) {
+            const x = col * tileWidth - offsetX % tileWidth;
+            const y = row * tileHeight - offsetY % tileHeight;
+            ctx.drawImage(tile, x, y);
+          }
         }
       }
     }
   }
   
   export default Tiles;
+  
