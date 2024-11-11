@@ -7,9 +7,26 @@ import TileImage1 from './FloresBlancas1.png';
 import TileImage2 from './FloresRojas1.png';
 import TileImage3 from './FlorMorada1.png';
 
+import upImageSrc from '../../assets/images/characters/DpFinalSolopngArriba.png';
+import downImageSrc from '../../assets/images/characters/DpFinalSolopngAbajo.png';
+import leftImageSrc from '../../assets/images/characters/DpFinalSolopngIzquierda.png';
+import rightImageSrc from '../../assets/images/characters/DpFinalSolopngDerecha.png';
+
 const TILE_SIZE = 128;
 const VISIBLE_TILES_X = 32;
 const VISIBLE_TILES_Y = 32;
+
+const images = {
+  up: new Image(),
+  down: new Image(),
+  left: new Image(),
+  right: new Image(),
+};
+
+images.up.src = upImageSrc;
+images.down.src = downImageSrc;
+images.left.src = leftImageSrc;
+images.right.src = rightImageSrc;
 
 const GameCanvas = () => {
   const canvasRef = useRef(null);
@@ -20,6 +37,22 @@ const GameCanvas = () => {
   const socket = useRef(null); // Referencia del cliente de Socket.IO
   const players = {}; // Estado para otros jugadores
   let shootingInterval = null;
+
+  const getPlayerImage = (direction) => {
+    console.log('Dirección del jugador:', direction);  // Agrega esto para depurar
+    if (!direction || (typeof direction.y === 'undefined' && typeof direction.x === 'undefined')) {
+      return images.down;
+    }
+  
+    // Verificamos la dirección
+    if (direction.y === -1) return images.up;
+    if (direction.y === 1) return images.down;
+    if (direction.x === -1) return images.left;
+    if (direction.x === 1) return images.right;
+  
+    return images.down;
+  };
+
 
   // Inicializa la posición del jugador al centro del mapa
   player.x = (tiles.mapMatrix[0].length * TILE_SIZE) / 2;
@@ -40,13 +73,13 @@ const GameCanvas = () => {
 
     // Cuando se conecte un nuevo jugador
     socket.current.on('newPlayer', (data) => {
-      players[data.id] = { x: data.x, y: data.y };
+      players[data.id] = { x: data.x, y: data.y, direction: { x: 0, y: 0 } };
     });
 
     // Escuchar el movimiento de otros jugadores
     socket.current.on('playerMoved', (data) => {
       if (players[data.id]) {
-        players[data.id] = { x: data.x, y: data.y };
+        players[data.id] = { x: data.x, y: data.y, direction: data.direction };
       }
     });
 
@@ -90,19 +123,27 @@ const GameCanvas = () => {
         playerHeight
       );
 
-
       // Dibujar las balas del jugador principal
       bulletManager.drawBullets(ctx, { x: player.x, y: player.y });
 
       // Dibujar a otros jugadores
-      ctx.fillStyle = 'White';
       for (const id in players) {
         const otherPlayer = players[id];
         const relativeX = centerX + (otherPlayer.x - player.x);
         const relativeY = centerY + (otherPlayer.y - player.y);
-        ctx.beginPath();
-        ctx.arc(relativeX, relativeY, 10, 0, Math.PI * 2);
-        ctx.fill();
+
+        // Obtener la imagen del otro jugador
+        const otherPlayerImage = getPlayerImage(otherPlayer.direction); // Usar getPlayerImage para obtener la imagen
+        const otherPlayerWidth = 100;  // Ajusta el tamaño según lo necesites
+        const otherPlayerHeight = 90;
+
+        ctx.drawImage(
+          otherPlayerImage,
+          relativeX - otherPlayerWidth / 2,
+          relativeY - otherPlayerHeight / 2,
+          otherPlayerWidth,
+          otherPlayerHeight
+        );
       }
     };
 
