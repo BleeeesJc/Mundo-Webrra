@@ -1,3 +1,4 @@
+// GameCanvas.js
 import React, { useEffect, useRef } from 'react';
 import Player from '../Game/Player';
 import BulletManager from '../Game/BulletManager';
@@ -6,21 +7,19 @@ import TileImage1 from './FloresBlancas1.png';
 import TileImage2 from './FloresRojas1.png';
 import TileImage3 from './FlorMorada1.png';
 
-const TILE_SIZE = 128; 
-const VISIBLE_TILES_X = 32; 
-const VISIBLE_TILES_Y = 32; 
-
-
-const getTileType = (tileX, tileY, numTiles) => {
-  const pseudoRandomNumber = Math.abs((tileX * 73856093) ^ (tileY * 19349663)) % numTiles;
-  return pseudoRandomNumber;
-};
+const TILE_SIZE = 128;
+const VISIBLE_TILES_X = 32;
+const VISIBLE_TILES_Y = 32;
 
 const GameCanvas = () => {
   const canvasRef = useRef(null);
   const player = new Player();
   const bulletManager = new BulletManager();
-  const tiles = new Tiles([TileImage1, TileImage2, TileImage3]); 
+  const tiles = new Tiles([TileImage1, TileImage2, TileImage3]);
+
+  // Inicializa la posición del jugador al centro del mapa
+  player.x = (tiles.mapMatrix[0].length * TILE_SIZE) / 2;
+  player.y = (tiles.mapMatrix.length * TILE_SIZE) / 2;
 
   let shootingInterval = null;
 
@@ -37,26 +36,10 @@ const GameCanvas = () => {
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Dibujar el mapa basado en la matriz
+      tiles.draw(ctx, player.x, player.y, canvas.width, canvas.height);
 
-      const startTileX = Math.floor(player.x / TILE_SIZE) - Math.floor(VISIBLE_TILES_X / 2);
-      const startTileY = Math.floor(player.y / TILE_SIZE) - Math.floor(VISIBLE_TILES_Y / 2);
-
-      for (let row = 0; row < VISIBLE_TILES_Y; row++) {
-        for (let col = 0; col < VISIBLE_TILES_X; col++) {
-          const tileX = startTileX + col;
-          const tileY = startTileY + row;
-
-          const tileType = getTileType(tileX, tileY, tiles.tiles.length);
-          const tile = tiles.tiles[tileType];
-
-          if (tile && tile.isLoaded) {
-            const x = (tileX * TILE_SIZE) - player.x % TILE_SIZE + canvas.width / 2;
-            const y = (tileY * TILE_SIZE) - player.y % TILE_SIZE + canvas.height / 2;
-            ctx.drawImage(tile, x, y);
-          }
-        }
-      }
-
+      // Dibujar el jugador en el centro del canvas
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
       ctx.fillStyle = 'black';
