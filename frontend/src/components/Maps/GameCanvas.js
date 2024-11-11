@@ -1,12 +1,15 @@
-// GameCanvas.js
 import React, { useEffect, useRef } from 'react';
 import Player from '../Game/Player';
 import BulletManager from '../Game/BulletManager';
-import io from 'socket.io-client';
 import Tiles from './Tiles';
+import io from 'socket.io-client';
 import TileImage1 from './FloresBlancas1.png';
 import TileImage2 from './FloresRojas1.png';
 import TileImage3 from './FlorMorada1.png';
+
+const TILE_SIZE = 128;
+const VISIBLE_TILES_X = 32;
+const VISIBLE_TILES_Y = 32;
 
 const GameCanvas = () => {
   const canvasRef = useRef(null);
@@ -14,15 +17,13 @@ const GameCanvas = () => {
   const bulletManager = new BulletManager();
   const tiles = new Tiles([TileImage1, TileImage2, TileImage3]);
 
+  const socket = useRef(null); // Referencia del cliente de Socket.IO
+  const players = {}; // Estado para otros jugadores
+  let shootingInterval = null;
+
   // Inicializa la posición del jugador al centro del mapa
   player.x = (tiles.mapMatrix[0].length * TILE_SIZE) / 2;
   player.y = (tiles.mapMatrix.length * TILE_SIZE) / 2;
-
-  let shootingInterval = null;
-  const socket = useRef(null); // Socket.IO client reference
-
-  // Estado para otros jugadores
-  const players = {};
 
   useEffect(() => {
     // Inicializar socket
@@ -65,13 +66,16 @@ const GameCanvas = () => {
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      draw();
+      draw(); // Redibujar el canvas después de cambiar el tamaño
     };
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Dibujar el punto en el centro del canvas
+      // Dibujar el mapa basado en la matriz
+      tiles.draw(ctx, player.x, player.y, canvas.width, canvas.height);
+
+      // Dibujar el jugador en el centro del canvas
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
       ctx.fillStyle = 'black';
@@ -79,26 +83,21 @@ const GameCanvas = () => {
       ctx.arc(centerX, centerY, 10, 0, Math.PI * 2);
       ctx.fill();
 
-      // Dibujar las balas
+      // Dibujar las balas del jugador principal
       bulletManager.drawBullets(ctx, { x: player.x, y: player.y });
 
-      // Opcional: Dibujar un "grid" para mostrar el desplazamiento del mundo
-      ctx.strokeStyle = '#ccc';
-      for (let i = -canvas.width; i <= canvas.width * 2; i += 50) {
+      // Dibujar a otros jugadores
+      ctx.fillStyle = 'blue';
+      for (const id in players) {
+        const otherPlayer = players[id];
+        const relativeX = centerX + (otherPlayer.x - player.x);
+        const relativeY = centerY + (otherPlayer.y - player.y);
         ctx.beginPath();
-        ctx.moveTo(i - player.x % 50, 0);
-        ctx.lineTo(i - player.x % 50, canvas.height);
-        ctx.stroke();
-      }
-      for (let j = -canvas.height; j <= canvas.height * 2; j += 50) {
-        ctx.beginPath();
-        ctx.moveTo(0, j - player.y % 50);
-        ctx.lineTo(canvas.width, j - player.y % 50);
-        ctx.stroke();
+        ctx.arc(relativeX, relativeY, 10, 0, Math.PI * 2);
+        ctx.fill();
       }
     };
 
-    // Maneja el movimiento del jugador y dispara balas
     const handleKeyDown = (e) => {
       player.move(e.key);
       draw();
@@ -106,6 +105,7 @@ const GameCanvas = () => {
       // Enviar el movimiento del jugador al servidor
       socket.current.emit('playerMove', { x: player.x, y: player.y });
 
+      // Iniciar el disparo continuo si hay una dirección de movimiento y aún no se está disparando
       if ((player.direction.x !== 0 || player.direction.y !== 0) && !shootingInterval) {
         shootingInterval = setInterval(() => {
           bulletManager.shoot(player.x + canvas.width / 2, player.y + canvas.height / 2, player.direction);
@@ -115,7 +115,7 @@ const GameCanvas = () => {
             direction: player.direction,
           });
           draw();
-        }, 500);
+        }, 500); // Dispara cada 500ms
       }
     };
 
@@ -142,6 +142,7 @@ const GameCanvas = () => {
 
     updateBullets();
 
+    // Limpiar los eventos y el intervalo al desmontar el componente
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
