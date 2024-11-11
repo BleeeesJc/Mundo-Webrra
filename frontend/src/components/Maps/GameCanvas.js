@@ -78,16 +78,24 @@ const GameCanvas = () => {
       // Dibujar el jugador en el centro del canvas
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
-      ctx.fillStyle = 'black';
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, 10, 0, Math.PI * 2);
-      ctx.fill();
+      // Obtener la imagen del jugador y dibujarla en el centro del canvas
+      const playerImage = player.getCurrentImage();
+      const playerWidth = 100; // Ajusta este tamaño si es necesario
+      const playerHeight = 90;
+      ctx.drawImage(
+        playerImage,
+        centerX - playerWidth / 2,
+        centerY - playerHeight / 2,
+        playerWidth,
+        playerHeight
+      );
+
 
       // Dibujar las balas del jugador principal
       bulletManager.drawBullets(ctx, { x: player.x, y: player.y });
 
       // Dibujar a otros jugadores
-      ctx.fillStyle = 'blue';
+      ctx.fillStyle = 'White';
       for (const id in players) {
         const otherPlayer = players[id];
         const relativeX = centerX + (otherPlayer.x - player.x);
