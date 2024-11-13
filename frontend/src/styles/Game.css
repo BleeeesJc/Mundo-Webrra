@@ -1,7 +1,9 @@
 body, html {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    height: 100%;
-    background-color: #f9f9f9;
-  }
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+  background-image: url('../assets/Mapas/fuerdadelmapa.png'); 
+  background-position: center;
+  background-repeat: no-repeat;
+}
