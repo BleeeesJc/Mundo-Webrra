@@ -19,6 +19,8 @@ class Player {
     this.x = 0;
     this.y = 0;
     this.direction = { x: 0, y: 0 }; // Dirección inicial
+    this.mapSizeInPixels = 45 * 256; // Tamaño del mapa en píxeles
+    this.tileSize = 256; // Tamaño de cada tile en píxeles
   }
 
   getCurrentImage() {
@@ -36,19 +38,19 @@ class Player {
     // Actualiza la dirección dependiendo de la tecla presionada
     switch (direction) {
       case 'ArrowUp':
-        this.y -= moveSpeed;
+        this.y = Math.max(0, this.y - moveSpeed);
         this.direction = { x: 0, y: -1 }; // Mira hacia arriba
         break;
       case 'ArrowDown':
-        this.y += moveSpeed;
+        this.y = Math.min(this.mapSizeInPixels - this.tileSize, this.y + moveSpeed);
         this.direction = { x: 0, y: 1 }; // Mira hacia abajo
         break;
       case 'ArrowLeft':
-        this.x -= moveSpeed;
+        this.x = Math.max(0, this.x - moveSpeed);
         this.direction = { x: -1, y: 0 }; // Mira hacia la izquierda
         break;
       case 'ArrowRight':
-        this.x += moveSpeed;
+        this.x = Math.min(this.mapSizeInPixels - this.tileSize, this.x + moveSpeed);
         this.direction = { x: 1, y: 0 }; // Mira hacia la derecha
         break;
       default:
