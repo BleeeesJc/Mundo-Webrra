@@ -1,6 +1,10 @@
+import bulletImageSrc from '../../assets/images/balas/Bala1Dp.png'; // Ajustar la ruta relativa
+
 class BulletManager {
   constructor() {
     this.bullets = []; // Array para almacenar las balas
+    this.bulletImage = new Image(); // Crear la instancia de la imagen
+    this.bulletImage.src = bulletImageSrc; // Usar la imagen importada como fuente
   }
 
   shoot(playerX, playerY, direction, playerWidth = 100, playerHeight = 90) {
@@ -44,11 +48,20 @@ class BulletManager {
   }
 
   drawBullets(ctx, viewOffset) {
-    ctx.fillStyle = 'black';
+    // Verificar que la imagen esté completamente cargada antes de dibujar
+    if (!this.bulletImage.complete || this.bulletImage.naturalWidth === 0) {
+      console.warn('La imagen aún no se ha cargado. No se dibujarán balas.');
+      return;
+    }
+
     this.bullets.forEach((bullet) => {
-      ctx.beginPath();
-      ctx.arc(bullet.x - viewOffset.x, bullet.y - viewOffset.y, 5, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.drawImage(
+        this.bulletImage, // Imagen de la bala
+        bullet.x - viewOffset.x - 10, // Ajusta las coordenadas para centrar
+        bullet.y - viewOffset.y - 10,
+        20, // Ancho de la bala
+        20  // Alto de la bala
+      );
     });
   }
 }
