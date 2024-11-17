@@ -1,35 +1,83 @@
-import bulletImageSrc from '../../assets/images/balas/Bala1Dp.png'; // Ajustar la ruta relativa
+import bulletUpImageSrc from '../../assets/images/balas/Bala1ArribaDp.png';
+import bulletDownImageSrc from '../../assets/images/balas/Bala1AbajoDp.png';
+import bulletLeftImageSrc from '../../assets/images/balas/Bala1IzqDp.png';
+import bulletRightImageSrc from '../../assets/images/balas/Bala1DerDp.png';
+import bulletUpLeftImageSrc from '../../assets/images/balas/Bala1ArrIzqDp.png';
+import bulletUpRightImageSrc from '../../assets/images/balas/Bala1ArrDerDp.png';
+import bulletDownLeftImageSrc from '../../assets/images/balas/Bala1AbajoIzqDp.png';
+import bulletDownRightImageSrc from '../../assets/images/balas/Bala1AbajoDerDp.png';
 
 class BulletManager {
   constructor() {
     this.bullets = []; // Array para almacenar las balas
-    this.bulletImage = new Image(); // Crear la instancia de la imagen
-    this.bulletImage.src = bulletImageSrc; // Usar la imagen importada como fuente
+
+    // Mapeo de imágenes de balas según la dirección
+    this.bulletImages = {
+      up: bulletUpImageSrc,
+      down: bulletDownImageSrc,
+      left: bulletLeftImageSrc,
+      right: bulletRightImageSrc,
+      upLeft: bulletUpLeftImageSrc,
+      upRight: bulletUpRightImageSrc,
+      downLeft: bulletDownLeftImageSrc,
+      downRight: bulletDownRightImageSrc,
+    };
   }
 
-  shoot(playerX, playerY, direction, playerWidth = 100, playerHeight = 90) {
+  // Método para disparar una bala
+  shoot(playerX, playerY, rawDirection, playerWidth = 100, playerHeight = 90) {
     const bulletSpeed = 4;
   
-    // Normalizar la dirección para garantizar consistencia en velocidad
-    const normalizedDirection = { ...direction };
-    const magnitude = Math.sqrt(direction.x ** 2 + direction.y ** 2);
-    if (magnitude > 0) {
-      normalizedDirection.x /= magnitude;
-      normalizedDirection.y /= magnitude;
+    // Normalizar la dirección
+    const magnitude = Math.sqrt(rawDirection.x ** 2 + rawDirection.y ** 2);
+    const normalizedDirection = magnitude > 0 ? 
+      { x: rawDirection.x / magnitude, y: rawDirection.y / magnitude } : 
+      { x: 0, y: 0 };
+  
+    // Validar dirección
+    if (normalizedDirection.x === 0 && normalizedDirection.y === 0) {
+      console.warn('Dirección inválida para disparar.');
+      return;
     }
+  
+    // Determinar la clave de dirección
+    const directionKey = this.getDirectionKey(rawDirection);
   
     // Calcular las coordenadas iniciales de la bala
     const initialX = playerX + playerWidth / 2;
     const initialY = playerY + playerHeight / 2;
   
+    // Agregar la nueva bala
     this.bullets.push({
       x: initialX,
       y: initialY,
       dx: normalizedDirection.x * bulletSpeed,
       dy: normalizedDirection.y * bulletSpeed,
+      image: this.bulletImages[directionKey],
     });
   }
+  
 
+  // Determinar la clave de dirección
+  getDirectionKey(direction) {
+    const { x, y } = direction;
+
+    // Verificar las combinaciones diagonales primero
+    if (x === -1 && y === -1) return 'upLeft';
+    if (x === 1 && y === -1) return 'upRight';
+    if (x === -1 && y === 1) return 'downLeft';
+    if (x === 1 && y === 1) return 'downRight';
+
+    // Direcciones principales
+    if (x === 0 && y === -1) return 'up';
+    if (x === 0 && y === 1) return 'down';
+    if (x === -1 && y === 0) return 'left';
+    if (x === 1 && y === 0) return 'right';
+
+    return 'down'; // Dirección por defecto (seguridad)
+  }
+
+  // Actualizar las balas en movimiento
   updateBullets(viewOffset, canvasWidth, canvasHeight) {
     this.bullets.forEach((bullet, index) => {
       bullet.x += bullet.dx;
@@ -47,16 +95,14 @@ class BulletManager {
     });
   }
 
+  // Dibujar las balas en el canvas
   drawBullets(ctx, viewOffset) {
-    // Verificar que la imagen esté completamente cargada antes de dibujar
-    if (!this.bulletImage.complete || this.bulletImage.naturalWidth === 0) {
-      console.warn('La imagen aún no se ha cargado. No se dibujarán balas.');
-      return;
-    }
-
     this.bullets.forEach((bullet) => {
+      const bulletImage = new Image();
+      bulletImage.src = bullet.image;
+
       ctx.drawImage(
-        this.bulletImage, // Imagen de la bala
+        bulletImage,
         bullet.x - viewOffset.x - 10, // Ajusta las coordenadas para centrar
         bullet.y - viewOffset.y - 10,
         20, // Ancho de la bala
