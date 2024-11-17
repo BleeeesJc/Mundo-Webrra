@@ -96,42 +96,72 @@ const GameCanvas = () => {
 
     const handleKeyDown = (e) => {
       pressedKeys[e.key] = true;
-
-      const direction = {
+    
+      // Direcciones basadas en las teclas presionadas
+      const rawDirection = {
         x: (pressedKeys['ArrowRight'] ? 1 : 0) - (pressedKeys['ArrowLeft'] ? 1 : 0),
         y: (pressedKeys['ArrowDown'] ? 1 : 0) - (pressedKeys['ArrowUp'] ? 1 : 0),
       };
-
-      player.move(direction);
+    
+      // Normalizar la dirección para el movimiento
+      const normalizedDirection = { ...rawDirection };
+      const magnitude = Math.sqrt(rawDirection.x ** 2 + rawDirection.y ** 2);
+      if (magnitude > 0) {
+        normalizedDirection.x /= magnitude;
+        normalizedDirection.y /= magnitude;
+      }
+    
+      player.move(normalizedDirection);
+    
+      // Actualizar la dirección "sin normalizar" para la imagen
+      player.setRawDirection(rawDirection);
+    
       draw();
-
+    
       socket.current.emit('playerMove', { x: player.x, y: player.y });
-
-      if ((direction.x !== 0 || direction.y !== 0) && !shootingInterval) {
+    
+      if ((rawDirection.x !== 0 || rawDirection.y !== 0) && !shootingInterval) {
         shootingInterval = setInterval(() => {
-          bulletManager.shoot(player.x, player.y, direction, canvas.width, canvas.height, 100, 90);
+          bulletManager.shoot(
+            player.x,
+            player.y,
+            rawDirection, // Usar dirección sin normalizar para las balas
+            canvas.width,
+            canvas.height,
+            100,
+            90
+          );
           socket.current.emit('playerShoot', {
             x: player.x,
             y: player.y,
-            direction,
+            direction: rawDirection, // Emitir dirección sin normalizar
           });
           draw();
         }, 500);
       }
-    };
+    };   
 
     const handleKeyUp = (e) => {
       delete pressedKeys[e.key];
-
-      const direction = {
+    
+      const rawDirection = {
         x: (pressedKeys['ArrowRight'] ? 1 : 0) - (pressedKeys['ArrowLeft'] ? 1 : 0),
         y: (pressedKeys['ArrowDown'] ? 1 : 0) - (pressedKeys['ArrowUp'] ? 1 : 0),
       };
-
-      player.move(direction);
+    
+      const normalizedDirection = { ...rawDirection };
+      const magnitude = Math.sqrt(rawDirection.x ** 2 + rawDirection.y ** 2);
+      if (magnitude > 0) {
+        normalizedDirection.x /= magnitude;
+        normalizedDirection.y /= magnitude;
+      }
+    
+      player.move(normalizedDirection);
+      player.setRawDirection(rawDirection);
+    
       draw();
-
-      if (direction.x === 0 && direction.y === 0 && shootingInterval) {
+    
+      if (normalizedDirection.x === 0 && normalizedDirection.y === 0 && shootingInterval) {
         clearInterval(shootingInterval);
         shootingInterval = null;
       }

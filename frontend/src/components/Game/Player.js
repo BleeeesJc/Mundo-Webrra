@@ -18,22 +18,30 @@ class Player {
   constructor() {
     this.x = 0;
     this.y = 0;
-    this.direction = { x: 0, y: 0 };
+    this.direction = { x: 0, y: 0 }; // Normalizada para movimiento
+    this.rawDirection = { x: 0, y: 0 }; // Sin normalizar para imágenes
     this.mapSizeInPixels = 45 * 256;
     this.tileSize = 256;
   }
 
-  getCurrentImage() {
-    if (this.direction.y === -1 && this.direction.x === 0) return images.up;
-    if (this.direction.y === 1 && this.direction.x === 0) return images.down;
-    if (this.direction.x === -1 && this.direction.y === 0) return images.left;
-    if (this.direction.x === 1 && this.direction.y === 0) return images.right;
+  setRawDirection(rawDirection) {
+    this.rawDirection = rawDirection;
+  }
 
-    // Para movimientos diagonales, prioriza vertical u horizontal según desees.
-    if (this.direction.x === -1 && this.direction.y === -1) return images.left; // Arriba-Izquierda
-    if (this.direction.x === 1 && this.direction.y === -1) return images.right; // Arriba-Derecha
-    if (this.direction.x === -1 && this.direction.y === 1) return images.left; // Abajo-Izquierda
-    if (this.direction.x === 1 && this.direction.y === 1) return images.right; // Abajo-Derecha
+  getCurrentImage() {
+    // Usar rawDirection para determinar la imagen
+    const { x, y } = this.rawDirection;
+
+    if (y === -1 && x === 0) return images.up;
+    if (y === 1 && x === 0) return images.down;
+    if (x === -1 && y === 0) return images.left;
+    if (x === 1 && y === 0) return images.right;
+
+    // Para movimientos diagonales
+    if (x === -1 && y === -1) return images.left; // Arriba-Izquierda
+    if (x === 1 && y === -1) return images.right; // Arriba-Derecha
+    if (x === -1 && y === 1) return images.left; // Abajo-Izquierda
+    if (x === 1 && y === 1) return images.right; // Abajo-Derecha
 
     return images.down;
   }
@@ -46,7 +54,7 @@ class Player {
     this.x = Math.min(Math.max(0, this.x + x * moveSpeed), this.mapSizeInPixels - this.tileSize);
     this.y = Math.min(Math.max(0, this.y + y * moveSpeed), this.mapSizeInPixels - this.tileSize);
 
-    // Actualizar dirección
+    // Actualizar dirección normalizada
     this.direction = direction;
   }
 }

@@ -5,16 +5,24 @@ class BulletManager {
 
   shoot(playerX, playerY, direction, playerWidth = 100, playerHeight = 90) {
     const bulletSpeed = 4;
-
-    // Calcular las coordenadas iniciales de la bala, basadas en el centro del jugador
+  
+    // Normalizar la dirección para garantizar consistencia en velocidad
+    const normalizedDirection = { ...direction };
+    const magnitude = Math.sqrt(direction.x ** 2 + direction.y ** 2);
+    if (magnitude > 0) {
+      normalizedDirection.x /= magnitude;
+      normalizedDirection.y /= magnitude;
+    }
+  
+    // Calcular las coordenadas iniciales de la bala
     const initialX = playerX + playerWidth / 2;
     const initialY = playerY + playerHeight / 2;
-
+  
     this.bullets.push({
       x: initialX,
       y: initialY,
-      dx: direction.x * bulletSpeed,
-      dy: direction.y * bulletSpeed,
+      dx: normalizedDirection.x * bulletSpeed,
+      dy: normalizedDirection.y * bulletSpeed,
     });
   }
 
