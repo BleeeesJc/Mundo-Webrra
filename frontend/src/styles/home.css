@@ -5,14 +5,14 @@ body, html {
     height: 100%;
     background-color: #000;
 }
-  
+
 canvas {
     position: absolute;
     top: 0;
     left: 0;
     pointer-events: none; /* Allow interaction with other elements */
 }
-  
+
 .home-container {
     position: relative;
     width: 100vw;
@@ -21,7 +21,7 @@ canvas {
 
 .image-background {
     position: absolute;
-    top: 45%;
+    top: 35%;
     left: 50%;
     width: 600px; /* Adjust width and height as needed */
     height: 600px;
@@ -44,12 +44,12 @@ canvas {
         transform: translate(-50%, -50%) scale(1);
     }
 }
-  
+
 .start-button {
     position: absolute;
     z-index: 10;
     left: 51%;
-    top: 90%;
+    top: 150%;
     transform: translate(-50%, -50%);
     width: 200px; /* Adjust to match image */
     height: 100px; /* Adjust to match image */
@@ -66,12 +66,14 @@ canvas {
 .start-button:hover {
     opacity: 0.8; /* Slightly decrease opacity on hover */
 }
+
 .falling-image {
     position: absolute;
     top: -64px; /* Start slightly off-screen */
     pointer-events: none; /* Allows clicks to pass through */
     z-index: 3;
-  }
+}
+
 /* Estilo para el texto parpadeante */
 .blinking-text {
     font-family: 'Press Start 2P', cursive;
@@ -79,14 +81,49 @@ canvas {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    color: white;
+    color: rgb(243, 239, 244);
     animation: blink-animation 1s steps(5, start) infinite;
-  }
-  
-  /* Animación de parpadeo */
-  @keyframes blink-animation {
+}
+
+/* Animación de parpadeo */
+@keyframes blink-animation {
     50% {
-      visibility: hidden;
+        visibility: hidden;
     }
-  }
-  
+}
+
+.character-registration {
+    position: absolute;
+    top: 75%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10;
+}
+
+.registration-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 24px;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.name-input {
+    width: 300px;
+    padding: 10px;
+    font-size: 16px;
+    font-family: 'Press Start 2P', cursive;
+    color: white; /* Text color */
+    background-color: black; /* Black background */
+    border: 2px solid transparent; /* Initial border color */
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+    transition: border-color 0.3s, box-shadow 0.3s; /* Smooth animation for border */
+}
+
+.name-input:focus {
+    outline: none;
+    border-color: #5824e8; /* Purple border on focus */
+    box-shadow: 0 0 10px #5824e8; /* Glowing purple effect */
+}

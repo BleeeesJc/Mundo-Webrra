@@ -60,3 +60,10 @@
     color: #e514ed;
     font-family: 'Press Start 2P', cursive;
 }
+.player-name {
+    text-align: center; /* Centra el texto */
+    font-family: 'Press Start 2P', sans-serif; /* Asegúrate de tener una fuente en estilo pixel (si ya la tienes definida) */
+    font-size: 24px; /* Tamaño de la fuente */
+    color: rgb(234, 23, 185); /* Color blanco para el texto */
+    margin-top: 20px; /* Espacio encima del texto */
+  }

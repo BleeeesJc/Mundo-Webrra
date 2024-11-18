@@ -15,6 +15,9 @@ const MenuPer = () => {
   const navigate = useNavigate();
   const imageSources = [AMT, PIST, ESP, ESPF];
 
+  // Recuperar el nombre del jugador desde localStorage
+  const playerName = localStorage.getItem('playerName') || 'Jugador';
+
   useEffect(() => {
     const container = document.createElement('div');
     container.style.position = 'absolute';
@@ -69,6 +72,10 @@ const MenuPer = () => {
 
   return (
     <div className="menu-container">
+      <div className="player-name">
+        {/* Muestra el nombre del jugador */}
+        <h2>Soldado {playerName}</h2>
+      </div>
       <div className="menu-text">Selecciona tu personaje!!</div>
       <div className="character-selection">
         <div
