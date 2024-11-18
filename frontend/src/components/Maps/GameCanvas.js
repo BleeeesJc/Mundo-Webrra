@@ -58,18 +58,36 @@ const GameCanvas = () => {
       // Dibujar mapa
       tiles.draw(ctx, player.x, player.y, canvas.width, canvas.height);
     
-      // Dibujar jugador en el centro del canvas
+      // Coordenadas para centrar al jugador
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
+    
+      // Dibujar jugador
       const playerImage = player.getCurrentImage();
-      const playerWidth = 100;
-      const playerHeight = 90;
       ctx.drawImage(
         playerImage,
-        centerX - playerWidth / 2,
-        centerY - playerHeight / 2,
-        playerWidth,
-        playerHeight
+        centerX - player.width / 2,
+        centerY - player.height / 2,
+        player.width,
+        player.height
+      );
+    
+      // Dibujar hitbox del jugador
+      const hitbox = player.getHitbox();
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; // Rojo semitransparente
+      ctx.fillRect(
+        centerX - player.hitboxWidth / 2,
+        centerY - player.hitboxHeight / 2,
+        player.hitboxWidth,
+        player.hitboxHeight
+      );
+      ctx.strokeStyle = 'red';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(
+        centerX - player.hitboxWidth / 2,
+        centerY - player.hitboxHeight / 2,
+        player.hitboxWidth,
+        player.hitboxHeight
       );
     
       // Dibujar balas
@@ -81,19 +99,17 @@ const GameCanvas = () => {
         const relativeX = centerX + (otherPlayer.x - player.x);
         const relativeY = centerY + (otherPlayer.y - player.y);
     
-        const otherPlayerImage = images.down; // Imagen por defecto, cambiar según sea necesario
-        const otherPlayerWidth = 100;
-        const otherPlayerHeight = 90;
         ctx.drawImage(
-          otherPlayerImage,
-          relativeX - otherPlayerWidth / 2,
-          relativeY - otherPlayerHeight / 2,
-          otherPlayerWidth,
-          otherPlayerHeight
+          images.down,
+          relativeX - 50, // Mitad del ancho de otro jugador
+          relativeY - 45, // Mitad del alto de otro jugador
+          100,
+          90
         );
       }
     };
-
+    
+    
     const handleKeyDown = (e) => {
       pressedKeys[e.key] = true;
     
