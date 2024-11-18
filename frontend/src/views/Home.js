@@ -7,16 +7,29 @@ import ESP from '../assets/images/ESP.png';
 import ESPF from '../assets/images/ESPF.png';
 import MSHOME from '../sounds/MSHOME.mp3'; 
 import '../styles/pixel.css'; 
+import { useNavigate } from 'react-router-dom'; // Importar el hook
+
 
 const Home = () => {
   const [audioPlayed, setAudioPlayed] = useState(false);
+  const [playerName, setPlayerName] = useState('');
+  const navigate = useNavigate(); // Hook para redirigir
+
 
   const playSound = () => {
     const audio = new Audio(MSHOME);  // Crea un objeto Audio con el archivo importado
     audio.play();
     setAudioPlayed(true);  // Marca que el sonido se ha reproducido
   };
-
+  const handleStart = () => {
+    if (playerName.trim() !== '') {
+      localStorage.setItem('playerName', playerName); // Guardar el nombre en localStorage
+      alert(`¡Bienvenido, ${playerName}!`);
+      navigate('/menu'); // Redirigir a la ruta "/menu"
+    } else {
+      alert('Por favor, ingresa un nombre.');
+    }
+  };
   useEffect(() => {
     // Solo se reproducirá si el sonido no se ha jugado aún
     if (!audioPlayed) {
@@ -234,9 +247,17 @@ const Home = () => {
   return (
     <div className="home-container">
       <div className="image-background"></div>
-      <Link to="/menu">
-        <button className="start-button"></button>
-      </Link>
+      <div className="character-registration">
+        <h1 className="registration-title">¡Enlistate para la batalla!</h1>
+        <input
+          type="text"
+          placeholder="Ingresa tu nombre"
+          className="name-input"
+          value={playerName}
+          onChange={(e) => setPlayerName(e.target.value)}
+        />
+        <button className="start-button" onClick={handleStart}></button>
+      </div>
       <canvas id="canvas-club"></canvas>
       <div className="blinking-text">PRESS START</div>
     </div>

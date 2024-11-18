@@ -1,0 +1,30 @@
+.game-over-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+  }
+  
+  .game-over-text {
+    color: red;
+    font-size: 5rem;
+    font-family: "PixelFont", sans-serif; /* Puedes usar una fuente de píxeles */
+    text-shadow: 3px 3px black;
+    animation: fadeIn 1s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
