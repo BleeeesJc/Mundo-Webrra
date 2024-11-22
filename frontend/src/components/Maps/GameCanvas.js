@@ -6,7 +6,7 @@ import io from 'socket.io-client';
 import TileImage1 from './FloresBlancas1.png';
 import TileImage2 from './FloresRojas1.png';
 import TileImage3 from './FlorMorada1.png';
-
+import '../../styles/pixel.css'
 import upImageSrc from '../../assets/images/characters/DpFinalSolopngArriba.png';
 import downImageSrc from '../../assets/images/characters/DpFinalSolopngAbajo.png';
 import leftImageSrc from '../../assets/images/characters/DpFinalSolopngIzquierda.png';
@@ -39,6 +39,18 @@ const GameCanvas = () => {
   // Initialize player position
   player.x = (tiles.mapMatrix[0].length * TILE_SIZE) / 2;
   player.y = (tiles.mapMatrix.length * TILE_SIZE) / 2;
+  const playerName = localStorage.getItem('playerName');
+
+  // Función para dibujar el nombre del jugador
+const drawPlayerName = (ctx, canvas) => {
+  ctx.font = '25px "Press Start 2P"'; // Aumenta el tamaño de la fuente
+  ctx.fillStyle = 'black';
+  const textWidth = ctx.measureText(playerName).width;
+  const xPosition = (canvas.width - textWidth) / 2; // Centrar horizontalmente
+  const yPosition = canvas.height / 2 - 50; // Mover más arriba
+  ctx.fillText(playerName, xPosition, yPosition);
+};
+
 
   useEffect(() => {
     const pressedKeys = {};
@@ -54,10 +66,10 @@ const GameCanvas = () => {
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
       // Dibujar mapa
       tiles.draw(ctx, player.x, player.y, canvas.width, canvas.height);
-    
+
       // Dibujar jugador en el centro del canvas
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
@@ -71,16 +83,19 @@ const GameCanvas = () => {
         playerWidth,
         playerHeight
       );
-    
+
+      // Dibujar nombre del jugador
+      drawPlayerName(ctx, canvas);
+
       // Dibujar balas
       bulletManager.drawBullets(ctx, { x: player.x, y: player.y });
-    
+
       // Dibujar otros jugadores
       for (const id in players) {
         const otherPlayer = players[id];
         const relativeX = centerX + (otherPlayer.x - player.x);
         const relativeY = centerY + (otherPlayer.y - player.y);
-    
+
         const otherPlayerImage = images.down; // Imagen por defecto, cambiar según sea necesario
         const otherPlayerWidth = 100;
         const otherPlayerHeight = 90;
@@ -96,13 +111,13 @@ const GameCanvas = () => {
 
     const handleKeyDown = (e) => {
       pressedKeys[e.key] = true;
-    
+
       // Direcciones basadas en las teclas presionadas
       const rawDirection = {
         x: (pressedKeys['ArrowRight'] ? 1 : 0) - (pressedKeys['ArrowLeft'] ? 1 : 0),
         y: (pressedKeys['ArrowDown'] ? 1 : 0) - (pressedKeys['ArrowUp'] ? 1 : 0),
       };
-    
+
       // Normalizar la dirección para el movimiento
       const normalizedDirection = { ...rawDirection };
       const magnitude = Math.sqrt(rawDirection.x ** 2 + rawDirection.y ** 2);
@@ -110,16 +125,16 @@ const GameCanvas = () => {
         normalizedDirection.x /= magnitude;
         normalizedDirection.y /= magnitude;
       }
-    
+
       player.move(normalizedDirection);
-    
+
       // Actualizar la dirección "sin normalizar" para la imagen
       player.setRawDirection(rawDirection);
-    
+
       draw();
-    
+
       socket.current.emit('playerMove', { x: player.x, y: player.y });
-    
+
       if ((rawDirection.x !== 0 || rawDirection.y !== 0) && !shootingInterval) {
         shootingInterval = setInterval(() => {
           bulletManager.shoot(
@@ -139,28 +154,28 @@ const GameCanvas = () => {
           draw();
         }, 500);
       }
-    };   
+    };
 
     const handleKeyUp = (e) => {
       delete pressedKeys[e.key];
-    
+
       const rawDirection = {
         x: (pressedKeys['ArrowRight'] ? 1 : 0) - (pressedKeys['ArrowLeft'] ? 1 : 0),
         y: (pressedKeys['ArrowDown'] ? 1 : 0) - (pressedKeys['ArrowUp'] ? 1 : 0),
       };
-    
+
       const normalizedDirection = { ...rawDirection };
       const magnitude = Math.sqrt(rawDirection.x ** 2 + rawDirection.y ** 2);
       if (magnitude > 0) {
         normalizedDirection.x /= magnitude;
         normalizedDirection.y /= magnitude;
       }
-    
+
       player.move(normalizedDirection);
       player.setRawDirection(rawDirection);
-    
+
       draw();
-    
+
       if (normalizedDirection.x === 0 && normalizedDirection.y === 0 && shootingInterval) {
         clearInterval(shootingInterval);
         shootingInterval = null;
