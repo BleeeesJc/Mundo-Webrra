@@ -6,6 +6,7 @@ import io from 'socket.io-client';
 import TileImage1 from './FloresBlancas1.png';
 import TileImage2 from './FloresRojas1.png';
 import TileImage3 from './FlorMorada1.png';
+import enemyImageSrc from './emegigoDeFuergo1.png';
 
 import upImageSrc from '../../assets/images/characters/DpFinalSolopngArriba.png';
 import downImageSrc from '../../assets/images/characters/DpFinalSolopngAbajo.png';
@@ -26,6 +27,9 @@ images.down.src = downImageSrc;
 images.left.src = leftImageSrc;
 images.right.src = rightImageSrc;
 
+const enemyImage = new Image();
+enemyImage.src = enemyImageSrc; // Cargar la imagen del enemigo
+
 const GameCanvas = () => {
   const canvasRef = useRef(null);
   const player = new Player();
@@ -34,11 +38,24 @@ const GameCanvas = () => {
 
   const socket = useRef(null);
   const players = {};
+  const enemies = []; // Arreglo para los enemigos
   let shootingInterval = null;
 
   // Initialize player position
   player.x = (tiles.mapMatrix[0].length * TILE_SIZE) / 2;
   player.y = (tiles.mapMatrix.length * TILE_SIZE) / 2;
+
+  const spawnEnemy = () => {
+    const distance = 300; // Distancia mínima desde el jugador
+    const angle = Math.random() * Math.PI * 2; // Ángulo aleatorio
+    const enemy = {
+      x: player.x + distance * Math.cos(angle),
+      y: player.y + distance * Math.sin(angle),
+      width: 50,
+      height: 50,
+    };
+    enemies.push(enemy);
+  };
 
   useEffect(() => {
     const pressedKeys = {};
@@ -89,6 +106,20 @@ const GameCanvas = () => {
         player.hitboxWidth,
         player.hitboxHeight
       );
+
+      // Dibujar enemigos
+      enemies.forEach((enemy) => {
+        const relativeX = centerX + (enemy.x - player.x);
+        const relativeY = centerY + (enemy.y - player.y);
+
+        ctx.drawImage(
+          enemyImage,
+          relativeX - enemy.width / 2,
+          relativeY - enemy.height / 2,
+          enemy.width,
+          enemy.height
+        );
+      });
     
       // Dibujar balas
       bulletManager.drawBullets(ctx, { x: player.x, y: player.y });
@@ -189,6 +220,12 @@ const GameCanvas = () => {
       requestAnimationFrame(updateBullets);
     };
 
+    const spawnEnemiesInterval = setInterval(() => {
+      if (enemies.length < 10) { // Limitar la cantidad de enemigos en el mapa
+        spawnEnemy();
+      }
+    }, 2000); // Aparecen nuevos enemigos cada 2 segundos
+
     // Initialize socket
     socket.current = io('http://localhost:5000');
     socket.current.on('currentPlayers', (currentPlayers) => {
@@ -223,6 +260,10 @@ const GameCanvas = () => {
 
     resizeCanvas();
     updateBullets();
+
+    return () => {
+      clearInterval(spawnEnemiesInterval);
+    };
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
