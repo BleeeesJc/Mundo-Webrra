@@ -29,6 +29,7 @@ images.right.src = rightImageSrc;
 
 const enemyImage = new Image();
 enemyImage.src = enemyImageSrc; // Cargar la imagen del enemigo
+const ENEMY_SPEED = 1.5; 
 
 const GameCanvas = () => {
   const canvasRef = useRef(null);
@@ -55,6 +56,23 @@ const GameCanvas = () => {
       height: 50,
     };
     enemies.push(enemy);
+  };
+
+  const updateEnemies = () => {
+    enemies.forEach((enemy) => {
+      // Calcular la dirección hacia el jugador
+      const dx = player.x - enemy.x;
+      const dy = player.y - enemy.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      // Normalizar el vector de movimiento
+      const dirX = dx / distance;
+      const dirY = dy / distance;
+
+      // Actualizar la posición del enemigo
+      enemy.x += dirX * ENEMY_SPEED;
+      enemy.y += dirY * ENEMY_SPEED;
+    });
   };
 
   useEffect(() => {
@@ -220,6 +238,13 @@ const GameCanvas = () => {
       requestAnimationFrame(updateBullets);
     };
 
+    const updateGame = () => {
+      updateEnemies(); // Actualizar posición de los enemigos
+      bulletManager.updateBullets({ x: player.x, y: player.y }, canvas.width, canvas.height);
+      draw();
+      requestAnimationFrame(updateGame);
+    };
+
     const spawnEnemiesInterval = setInterval(() => {
       if (enemies.length < 10) { // Limitar la cantidad de enemigos en el mapa
         spawnEnemy();
@@ -260,6 +285,7 @@ const GameCanvas = () => {
 
     resizeCanvas();
     updateBullets();
+    updateGame();
 
     return () => {
       clearInterval(spawnEnemiesInterval);
