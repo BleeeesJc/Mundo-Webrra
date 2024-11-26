@@ -6,7 +6,7 @@ import io from 'socket.io-client';
 import TileImage1 from './FloresBlancas1.png';
 import TileImage2 from './FloresRojas1.png';
 import TileImage3 from './FlorMorada1.png';
-import enemyImageSrc from './emegigoDeFuergo1.png';
+import enemyImageSrc from './candeFuego.png';
 
 import upImageSrc from '../../assets/images/characters/DpFinalSolopngArriba.png';
 import downImageSrc from '../../assets/images/characters/DpFinalSolopngAbajo.png';
@@ -29,8 +29,8 @@ images.right.src = rightImageSrc;
 
 const enemyImage = new Image();
 enemyImage.src = enemyImageSrc; // Cargar la imagen del enemigo
-const MIN_ENEMY_SPEED = 1; // Velocidad mínima de los enemigos
-const MAX_ENEMY_SPEED = 3; // Velocidad máxima de los enemigos
+const MIN_ENEMY_SPEED = 0.5; // Velocidad mínima de los enemigos
+const MAX_ENEMY_SPEED = 1.8; // Velocidad máxima de los enemigos
 
 const GameCanvas = () => {
   const canvasRef = useRef(null);
