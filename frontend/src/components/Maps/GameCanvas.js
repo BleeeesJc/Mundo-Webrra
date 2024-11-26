@@ -29,7 +29,8 @@ images.right.src = rightImageSrc;
 
 const enemyImage = new Image();
 enemyImage.src = enemyImageSrc; // Cargar la imagen del enemigo
-const ENEMY_SPEED = 1.5; 
+const MIN_ENEMY_SPEED = 1; // Velocidad mínima de los enemigos
+const MAX_ENEMY_SPEED = 3; // Velocidad máxima de los enemigos
 
 const GameCanvas = () => {
   const canvasRef = useRef(null);
@@ -49,11 +50,13 @@ const GameCanvas = () => {
   const spawnEnemy = () => {
     const distance = 300; // Distancia mínima desde el jugador
     const angle = Math.random() * Math.PI * 2; // Ángulo aleatorio
+    const speed = Math.random() * (MAX_ENEMY_SPEED - MIN_ENEMY_SPEED) + MIN_ENEMY_SPEED; // Velocidad aleatoria
     const enemy = {
       x: player.x + distance * Math.cos(angle),
       y: player.y + distance * Math.sin(angle),
       width: 50,
       height: 50,
+      speed: speed, // Velocidad específica del enemigo
     };
     enemies.push(enemy);
   };
@@ -69,9 +72,9 @@ const GameCanvas = () => {
       const dirX = dx / distance;
       const dirY = dy / distance;
 
-      // Actualizar la posición del enemigo
-      enemy.x += dirX * ENEMY_SPEED;
-      enemy.y += dirY * ENEMY_SPEED;
+      // Actualizar la posición del enemigo con su velocidad específica
+      enemy.x += dirX * enemy.speed;
+      enemy.y += dirY * enemy.speed;
     });
   };
 
