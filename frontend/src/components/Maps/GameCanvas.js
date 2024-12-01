@@ -8,6 +8,7 @@ import TileImage2 from './FloresRojas1.png';
 import TileImage3 from './FlorMorada1.png';
 import enemyImageSrc from './candeFuego.png';
 import cactusImageSrc from '../../../src/assets/images/obstaculos/cactus.png';
+import { useNavigate } from 'react-router-dom';
 
 import '../../styles/pixel.css'
 import upImageSrc from '../../assets/images/characters/DpFinalSolopngArriba.png';
@@ -38,6 +39,8 @@ const MIN_ENEMY_SPEED = 0.5;
 const MAX_ENEMY_SPEED = 1.8;
 
 const GameCanvas = () => {
+
+  const navigate = useNavigate(); // Crear instancia de navigate
   const canvasRef = useRef(null);
   const player = new Player();
   const bulletManager = new BulletManager();
@@ -135,7 +138,7 @@ const drawPlayerName = (ctx, canvas) => {
   
           if (player.health <= 0) {
             console.log("Jugador ha muerto");
-            // Lógica para game over
+            navigate('/gameover'); // Redirigir al componente Game Over            // Lógica para game over
           }
         }
       }
