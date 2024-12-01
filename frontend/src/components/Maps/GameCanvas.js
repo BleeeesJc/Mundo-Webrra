@@ -101,15 +101,15 @@ const GameCanvas = () => {
       width: 50,
       height: 50,
       speed: speed,
-      hitbox: {
-        x: 0,
-        y: 0,
-        width: 50,
-        height: 50,
-      },
+      health: 100, // Vida inicial del enemigo
+      maxHealth: 100, // Máxima vida para referencia
+      hitbox: { x: 0, y: 0, width: 50, height: 50 },
+      lastAttackTime: 0, // Inicializamos el tiempo del último ataque
+
     };
     enemies.push(enemy);
   };
+  
 
   // Función para generar obstáculos
   const spawnObstacle = () => {
@@ -133,42 +133,60 @@ const GameCanvas = () => {
   const updateEnemies = () => {
     const enemiesToRemove = [];
     const bulletsToRemove = [];
-
+  
+    const currentTime = Date.now(); // Tiempo actual en milisegundos
+  
     enemies.forEach((enemy, enemyIndex) => {
       const dx = player.x - enemy.x;
       const dy = player.y - enemy.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-
+  
       const dirX = dx / distance;
       const dirY = dy / distance;
-
+  
       enemy.x += dirX * enemy.speed;
       enemy.y += dirY * enemy.speed;
-
+  
       enemy.hitbox.x = enemy.x - enemy.width / 2;
       enemy.hitbox.y = enemy.y - enemy.height / 2;
-
+  
+      // Verificar colisión con el jugador
       if (checkCollision(enemy.hitbox, player.getHitbox())) {
-        console.log("Colisión con el jugador");
+        if (!enemy.lastAttackTime || currentTime - enemy.lastAttackTime >= 2000) {
+          // Han pasado al menos 2 segundos desde el último ataque
+          console.log("Enemigo golpeó al jugador");
+          player.reduceHealth(5); // Restar 5 de vida al jugador
+          enemy.lastAttackTime = currentTime; // Actualizar el tiempo del último ataque
+  
+          if (player.health <= 0) {
+            console.log("Jugador ha muerto");
+            // Lógica para game over
+          }
+        }
       }
-
+  
       bulletManager.bullets.forEach((bullet, bulletIndex) => {
         if (checkCollision(enemy.hitbox, bullet.hitbox)) {
-          console.log("Enemigo eliminado por bala");
-          enemiesToRemove.push(enemyIndex);
+          console.log("Enemigo alcanzado por bala");
+          enemy.health -= 25; // Reducir salud por cada impacto
           bulletsToRemove.push(bulletIndex);
+  
+          if (enemy.health <= 0) {
+            enemiesToRemove.push(enemyIndex);
+          }
         }
-      });      
+      });
     });
-
+  
     enemiesToRemove.forEach((enemyIndex) => {
       enemies.splice(enemyIndex, 1);
     });
-
+  
     bulletsToRemove.forEach((bulletIndex) => {
       bulletManager.bullets.splice(bulletIndex, 1);
     });
   };
+  
 
   const updateObstacles = () => {
     obstacles.forEach((obstacle) => {
@@ -193,7 +211,32 @@ const GameCanvas = () => {
       rect1.y + rect1.height > rect2.y
     );
   };
-
+  const drawPlayerHealthBar = (ctx, canvas) => {
+    const healthBarWidth = 100; // Ancho de la barra de vida
+    const healthBarHeight = 10; // Altura de la barra de vida
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+  
+    const healthBarX = centerX - healthBarWidth / 2;
+    const healthBarY = centerY + player.height / 2 + 10; // Debajo del jugador
+  
+    // Dibujar la barra de vida vacía (roja)
+    ctx.fillStyle = "red";
+    ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+  
+    // Dibujar la barra de vida actual (verde)
+    ctx.fillStyle = "green";
+    ctx.fillRect(
+      healthBarX,
+      healthBarY,
+      (player.health / player.maxHealth) * healthBarWidth,
+      healthBarHeight
+    );
+  
+    // Dibujar el borde de la barra de vida
+    ctx.strokeStyle = "black";
+    ctx.strokeRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+  };
   useEffect(() => {
     const pressedKeys = {};
 
@@ -227,6 +270,9 @@ const GameCanvas = () => {
         player.height
       );
 
+      drawPlayerHealthBar(ctx, canvas);
+
+
       const hitbox = player.getHitbox();
       ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
       ctx.fillRect(
@@ -247,7 +293,8 @@ const GameCanvas = () => {
       enemies.forEach((enemy) => {
         const relativeX = centerX + (enemy.x - player.x);
         const relativeY = centerY + (enemy.y - player.y);
-
+      
+        // Dibujar al enemigo
         ctx.drawImage(
           enemyImage,
           relativeX - enemy.width / 2,
@@ -255,15 +302,28 @@ const GameCanvas = () => {
           enemy.width,
           enemy.height
         );
-
-        ctx.strokeStyle = "red";
-        ctx.strokeRect(
-          relativeX - enemy.width / 2,
-          relativeY - enemy.height / 2,
-          enemy.width,
-          enemy.height
+      
+        // Dibujar la barra de vida encima del enemigo
+        const healthBarWidth = enemy.width;
+        const healthBarHeight = 5;
+        const healthBarX = relativeX - healthBarWidth / 2;
+        const healthBarY = relativeY - enemy.height / 2 - 10;
+      
+        ctx.fillStyle = "red";
+        ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+      
+        ctx.fillStyle = "green";
+        ctx.fillRect(
+          healthBarX,
+          healthBarY,
+          (enemy.health / enemy.maxHealth) * healthBarWidth,
+          healthBarHeight
         );
+      
+        ctx.strokeStyle = "black";
+        ctx.strokeRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
       });
+      
 
       obstacles.forEach((obstacle) => {
         const relativeX = centerX + (obstacle.x - player.x);

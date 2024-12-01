@@ -27,6 +27,9 @@ class Player {
     this.hitboxHeight = 85;
     this.width = 100; // Ancho del sprite
     this.height = 90; // Alto del sprite
+
+    this.health = 100; // Vida inicial
+    this.maxHealth = 100; // Vida máxima
   }
 
   setRawDirection(rawDirection) {
@@ -61,6 +64,10 @@ class Player {
       width: this.hitboxWidth,
       height: this.hitboxHeight,
     };
+  }
+
+  reduceHealth(amount) {
+    this.health = Math.max(0, this.health - amount); // Asegurarse de que no sea menor que 0
   }
 }
 
