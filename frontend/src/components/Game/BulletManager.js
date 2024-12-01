@@ -27,22 +27,21 @@ class BulletManager {
   // Método para disparar una bala
   shoot(playerX, playerY, rawDirection, playerWidth = 100, playerHeight = 90) {
     const bulletSpeed = 4;
-
+  
     // Normalizar la dirección para garantizar consistencia en velocidad
-    const normalizedDirection = { ...rawDirection };
     const magnitude = Math.sqrt(rawDirection.x ** 2 + rawDirection.y ** 2);
-    if (magnitude > 0) {
-      normalizedDirection.x /= magnitude;
-      normalizedDirection.y /= magnitude;
-    }
-
+    const normalizedDirection = { 
+      x: rawDirection.x / magnitude || 0, 
+      y: rawDirection.y / magnitude || 0 
+    };
+  
     // Validar dirección
     if (normalizedDirection.x === 0 && normalizedDirection.y === 0) {
       console.warn('Dirección inválida para disparar.');
       return;
     }
-
-    // Determinar la clave de dirección
+  
+    // Determinar la clave de dirección utilizando rawDirection
     const directionKey = this.getDirectionKey(rawDirection);
 
     // Calcular las coordenadas iniciales de la bala
@@ -68,21 +67,23 @@ class BulletManager {
 
   // Determinar la clave de dirección
   getDirectionKey(direction) {
-    const { x, y } = direction;
-
+    // Redondear los valores de x e y
+    const x = Math.round(direction.x);
+    const y = Math.round(direction.y);
+  
     // Verificar las combinaciones diagonales primero
     if (x === -1 && y === -1) return 'upLeft';
     if (x === 1 && y === -1) return 'upRight';
     if (x === -1 && y === 1) return 'downLeft';
     if (x === 1 && y === 1) return 'downRight';
-
+  
     // Direcciones principales
     if (x === 0 && y === -1) return 'up';
     if (x === 0 && y === 1) return 'down';
     if (x === -1 && y === 0) return 'left';
     if (x === 1 && y === 0) return 'right';
-
-    return 'down'; // Dirección por defecto (seguridad)
+  
+    return 'down'; // Dirección por defecto
   }
 
   updateBullets(viewOffset, canvasWidth, canvasHeight) {
