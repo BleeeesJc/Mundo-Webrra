@@ -8,12 +8,9 @@ import TileImage2 from './FloresRojas1.png';
 import TileImage3 from './FlorMorada1.png';
 import enemyImageSrc from './candeFuego.png';
 import cactusImageSrc from '../../../src/assets/images/obstaculos/cactus.png';
-<<<<<<< HEAD
 import { useNavigate } from 'react-router-dom';
-=======
 import chatIconSrc from './chat-icono.png';
 import ChatSocket from '../Chat/Chat';
->>>>>>> 2e6cd6299a789df4d9a18b507f5d576ffdfb87a6
 
 import '../../styles/chat.css';
 import '../../styles/pixel.css';
