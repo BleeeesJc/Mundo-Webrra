@@ -176,7 +176,32 @@ const drawPlayerName = (ctx, canvas) => {
       rect1.y + rect1.height > rect2.y
     );
   };
-
+  const drawPlayerHealthBar = (ctx, canvas) => {
+    const healthBarWidth = 100; // Ancho de la barra de vida
+    const healthBarHeight = 10; // Altura de la barra de vida
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+  
+    const healthBarX = centerX - healthBarWidth / 2;
+    const healthBarY = centerY + player.height / 2 + 10; // Debajo del jugador
+  
+    // Dibujar la barra de vida vacía (roja)
+    ctx.fillStyle = "red";
+    ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+  
+    // Dibujar la barra de vida actual (verde)
+    ctx.fillStyle = "green";
+    ctx.fillRect(
+      healthBarX,
+      healthBarY,
+      (player.health / player.maxHealth) * healthBarWidth,
+      healthBarHeight
+    );
+  
+    // Dibujar el borde de la barra de vida
+    ctx.strokeStyle = "black";
+    ctx.strokeRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+  };
   useEffect(() => {
     const pressedKeys = {};
 
@@ -209,6 +234,9 @@ const drawPlayerName = (ctx, canvas) => {
         player.width,
         player.height
       );
+
+      drawPlayerHealthBar(ctx, canvas);
+
 
       const hitbox = player.getHitbox();
       ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
