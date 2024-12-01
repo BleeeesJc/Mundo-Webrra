@@ -65,6 +65,10 @@ class Player {
       height: this.hitboxHeight,
     };
   }
+
+  reduceHealth(amount) {
+    this.health = Math.max(0, this.health - amount); // Asegurarse de que no sea menor que 0
+  }
 }
 
 export default Player;

@@ -78,12 +78,9 @@ const drawPlayerName = (ctx, canvas) => {
       speed: speed,
       health: 100, // Vida inicial del enemigo
       maxHealth: 100, // Máxima vida para referencia
-      hitbox: {
-        x: 0,
-        y: 0,
-        width: 50,
-        height: 50,
-      },
+      hitbox: { x: 0, y: 0, width: 50, height: 50 },
+      lastAttackTime: 0, // Inicializamos el tiempo del último ataque
+
     };
     enemies.push(enemy);
   };
@@ -112,6 +109,8 @@ const drawPlayerName = (ctx, canvas) => {
     const enemiesToRemove = [];
     const bulletsToRemove = [];
   
+    const currentTime = Date.now(); // Tiempo actual en milisegundos
+  
     enemies.forEach((enemy, enemyIndex) => {
       const dx = player.x - enemy.x;
       const dy = player.y - enemy.y;
@@ -126,8 +125,19 @@ const drawPlayerName = (ctx, canvas) => {
       enemy.hitbox.x = enemy.x - enemy.width / 2;
       enemy.hitbox.y = enemy.y - enemy.height / 2;
   
+      // Verificar colisión con el jugador
       if (checkCollision(enemy.hitbox, player.getHitbox())) {
-        console.log("Colisión con el jugador");
+        if (!enemy.lastAttackTime || currentTime - enemy.lastAttackTime >= 2000) {
+          // Han pasado al menos 2 segundos desde el último ataque
+          console.log("Enemigo golpeó al jugador");
+          player.reduceHealth(5); // Restar 5 de vida al jugador
+          enemy.lastAttackTime = currentTime; // Actualizar el tiempo del último ataque
+  
+          if (player.health <= 0) {
+            console.log("Jugador ha muerto");
+            // Lógica para game over
+          }
+        }
       }
   
       bulletManager.bullets.forEach((bullet, bulletIndex) => {
