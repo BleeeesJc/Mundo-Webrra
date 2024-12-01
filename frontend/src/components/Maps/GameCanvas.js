@@ -115,12 +115,12 @@ const GameCanvas = () => {
       }
 
       bulletManager.bullets.forEach((bullet, bulletIndex) => {
-        if (bullet && bullet.hitbox && checkCollision(enemy.hitbox, bullet.hitbox)) {
+        if (checkCollision(enemy.hitbox, bullet.hitbox)) {
           console.log("Enemigo eliminado por bala");
           enemiesToRemove.push(enemyIndex);
           bulletsToRemove.push(bulletIndex);
         }
-      });
+      });      
     });
 
     enemiesToRemove.forEach((enemyIndex) => {

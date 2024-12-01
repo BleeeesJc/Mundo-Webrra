@@ -27,36 +27,43 @@ class BulletManager {
   // Método para disparar una bala
   shoot(playerX, playerY, rawDirection, playerWidth = 100, playerHeight = 90) {
     const bulletSpeed = 4;
-  
+
     // Normalizar la dirección
     const magnitude = Math.sqrt(rawDirection.x ** 2 + rawDirection.y ** 2);
-    const normalizedDirection = magnitude > 0 ? 
-      { x: rawDirection.x / magnitude, y: rawDirection.y / magnitude } : 
+    const normalizedDirection = magnitude > 0 ?
+      { x: rawDirection.x / magnitude, y: rawDirection.y / magnitude } :
       { x: 0, y: 0 };
-  
+
     // Validar dirección
     if (normalizedDirection.x === 0 && normalizedDirection.y === 0) {
       console.warn('Dirección inválida para disparar.');
       return;
     }
-  
+
     // Determinar la clave de dirección
     const directionKey = this.getDirectionKey(rawDirection);
-  
+
     // Calcular las coordenadas iniciales de la bala
     const initialX = playerX + playerWidth / 2;
     const initialY = playerY + playerHeight / 2;
-  
+
     // Agregar la nueva bala
+    const bulletSize = 10; // Tamaño de la hitbox de la bala
     this.bullets.push({
       x: initialX,
       y: initialY,
       dx: normalizedDirection.x * bulletSpeed,
       dy: normalizedDirection.y * bulletSpeed,
       image: this.bulletImages[directionKey],
+      hitbox: {
+        x: initialX - bulletSize / 2,
+        y: initialY - bulletSize / 2,
+        width: bulletSize,
+        height: bulletSize,
+      },
     });
   }
-  
+
 
   // Determinar la clave de dirección
   getDirectionKey(direction) {
@@ -77,12 +84,17 @@ class BulletManager {
     return 'down'; // Dirección por defecto (seguridad)
   }
 
-  // Actualizar las balas en movimiento
   updateBullets(viewOffset, canvasWidth, canvasHeight) {
+    const bulletSize = 10; // Tamaño de la hitbox de la bala
     this.bullets.forEach((bullet, index) => {
+      // Actualizar posición de la bala
       bullet.x += bullet.dx;
       bullet.y += bullet.dy;
-
+  
+      // Actualizar posición de la hitbox
+      bullet.hitbox.x = bullet.x - bulletSize / 2;
+      bullet.hitbox.y = bullet.y - bulletSize / 2;
+  
       // Remover balas que salen del canvas
       if (
         bullet.x < viewOffset.x ||
@@ -93,7 +105,7 @@ class BulletManager {
         this.bullets.splice(index, 1);
       }
     });
-  }
+  }  
 
   // Dibujar las balas en el canvas
   drawBullets(ctx, viewOffset) {
@@ -107,6 +119,15 @@ class BulletManager {
         bullet.y - viewOffset.y - 10,
         20, // Ancho de la bala
         20  // Alto de la bala
+      );
+
+      // Dibujar hitbox de la bala
+      ctx.strokeStyle = 'blue';
+      ctx.strokeRect(
+        bullet.hitbox.x - viewOffset.x,
+        bullet.hitbox.y - viewOffset.y,
+        bullet.hitbox.width,
+        bullet.hitbox.height
       );
     });
   }
