@@ -28,11 +28,13 @@ class BulletManager {
   shoot(playerX, playerY, rawDirection, playerWidth = 100, playerHeight = 90) {
     const bulletSpeed = 4;
 
-    // Normalizar la dirección
+    // Normalizar la dirección para garantizar consistencia en velocidad
+    const normalizedDirection = { ...rawDirection };
     const magnitude = Math.sqrt(rawDirection.x ** 2 + rawDirection.y ** 2);
-    const normalizedDirection = magnitude > 0 ?
-      { x: rawDirection.x / magnitude, y: rawDirection.y / magnitude } :
-      { x: 0, y: 0 };
+    if (magnitude > 0) {
+      normalizedDirection.x /= magnitude;
+      normalizedDirection.y /= magnitude;
+    }
 
     // Validar dirección
     if (normalizedDirection.x === 0 && normalizedDirection.y === 0) {
@@ -64,7 +66,6 @@ class BulletManager {
     });
   }
 
-
   // Determinar la clave de dirección
   getDirectionKey(direction) {
     const { x, y } = direction;
@@ -90,11 +91,11 @@ class BulletManager {
       // Actualizar posición de la bala
       bullet.x += bullet.dx;
       bullet.y += bullet.dy;
-  
+
       // Actualizar posición de la hitbox
       bullet.hitbox.x = bullet.x - bulletSize / 2;
       bullet.hitbox.y = bullet.y - bulletSize / 2;
-  
+
       // Remover balas que salen del canvas
       if (
         bullet.x < viewOffset.x ||
@@ -105,7 +106,7 @@ class BulletManager {
         this.bullets.splice(index, 1);
       }
     });
-  }  
+  }
 
   // Dibujar las balas en el canvas
   drawBullets(ctx, viewOffset) {
