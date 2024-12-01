@@ -1,0 +1,52 @@
+/* Estilos para el contenedor del chat */
+.chat-container {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    width: 300px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  /* Estilos para los mensajes del chat */
+  .chat-messages {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+  }
+  
+  /* Estilos para el formulario de entrada del chat */
+  .chat-container form {
+    display: flex;
+  }
+  
+  /* Estilos para el campo de entrada del chat */
+  .chat-container input[type="text"] {
+    flex: 1;
+    margin-right: 5px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  
+  /* Estilos para el botón de enviar del chat */
+  .chat-container button {
+    padding: 5px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  
+  .chat-container button:hover {
+    background-color: #218838;
+  }
+  
+  /* Estilos para los nombres de los jugadores en el chat */
+  .chat-messages strong {
+    color: #ffc107;
+  }
+  

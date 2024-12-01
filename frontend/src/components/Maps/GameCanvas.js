@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Player from '../Game/Player';
 import BulletManager from '../Game/BulletManager';
 import Tiles from './Tiles';
@@ -8,9 +8,15 @@ import TileImage2 from './FloresRojas1.png';
 import TileImage3 from './FlorMorada1.png';
 import enemyImageSrc from './candeFuego.png';
 import cactusImageSrc from '../../../src/assets/images/obstaculos/cactus.png';
+<<<<<<< HEAD
 import { useNavigate } from 'react-router-dom';
+=======
+import chatIconSrc from './chat-icono.png';
+import ChatSocket from '../Chat/Chat';
+>>>>>>> 2e6cd6299a789df4d9a18b507f5d576ffdfb87a6
 
-import '../../styles/pixel.css'
+import '../../styles/chat.css';
+import '../../styles/pixel.css';
 import upImageSrc from '../../assets/images/characters/DpFinalSolopngArriba.png';
 import downImageSrc from '../../assets/images/characters/DpFinalSolopngAbajo.png';
 import leftImageSrc from '../../assets/images/characters/DpFinalSolopngIzquierda.png';
@@ -46,26 +52,48 @@ const GameCanvas = () => {
   const bulletManager = new BulletManager();
   const tiles = new Tiles([TileImage1, TileImage2, TileImage3]);
 
+  const gameSocket = useRef(null);
+  const chatSocket = useRef(null);
   const socket = useRef(null);
   const players = {};
   const enemies = [];
   const obstacles = []; // Arreglo para los obstáculos
   let shootingInterval = null;
 
+  const [showChat, setShowChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+
   // Initialize player position
   player.x = (tiles.mapMatrix[0].length * TILE_SIZE) / 2;
   player.y = (tiles.mapMatrix.length * TILE_SIZE) / 2;
   const playerName = localStorage.getItem('playerName');
 
+  const handleChatIconClick = () => {
+    setShowChat((prev) => !prev);
+  };
+
+  const handleChatInput = (e) => {
+    setChatInput(e.target.value);
+  };
+
+  const handleChatSubmit = (e) => {
+    e.preventDefault();
+    if (chatInput.trim() !== '') {
+      chatSocket.current.sendMessage(playerName, chatInput);
+      setChatInput('');
+    }
+  };
+
   // Función para dibujar el nombre del jugador
-const drawPlayerName = (ctx, canvas) => {
-  ctx.font = '25px "Press Start 2P"'; // Aumenta el tamaño de la fuente
-  ctx.fillStyle = 'black';
-  const textWidth = ctx.measureText(playerName).width;
-  const xPosition = (canvas.width - textWidth) / 2; // Centrar horizontalmente
-  const yPosition = canvas.height / 2 - 50; // Mover más arriba
-  ctx.fillText(playerName, xPosition, yPosition);
-};
+  const drawPlayerName = (ctx, canvas) => {
+    ctx.font = '25px "Press Start 2P"'; // Aumenta el tamaño de la fuente
+    ctx.fillStyle = 'black';
+    const textWidth = ctx.measureText(playerName).width;
+    const xPosition = (canvas.width - textWidth) / 2; // Centrar horizontalmente
+    const yPosition = canvas.height / 2 - 50; // Mover más arriba
+    ctx.fillText(playerName, xPosition, yPosition);
+  };
 
 
   // Función para generar enemigos con hitbox
@@ -371,56 +399,61 @@ const drawPlayerName = (ctx, canvas) => {
       player.move(normalizedDirection);
 
       // Actualizar la dirección "sin normalizar" para la imagen
+  
+      // Movemos y actualizamos la dirección del jugador
+      player.move(rawDirection);
       player.setRawDirection(rawDirection);
-
-      draw();
-
-      socket.current.emit('playerMove', { x: player.x, y: player.y });
-
-      if ((rawDirection.x !== 0 || rawDirection.y !== 0) && !shootingInterval) {
+  
+      // Iniciar intervalo de disparo si no está ya iniciado
+      if (!shootingInterval) {
         shootingInterval = setInterval(() => {
-          bulletManager.shoot(
-            player.x,
-            player.y,
-            rawDirection,
-            canvas.width,
-            canvas.height,
-            100,
-            90
-          );
-          socket.current.emit('playerShoot', {
-            x: player.x,
-            y: player.y,
-            direction: rawDirection,
-          });
-          draw();
-        }, 500);
+          // Recalculamos la dirección actual al momento de disparar
+          const shootDirection = { ...player.rawDirection };
+  
+          // Si el jugador no se está moviendo, no disparamos
+          if (shootDirection.x !== 0 || shootDirection.y !== 0) {
+            bulletManager.shoot(
+              player.x,
+              player.y,
+              shootDirection,
+              canvas.width,
+              canvas.height,
+              100,
+              90
+            );
+          }
+        }, 200); // Dispara cada 200 ms (ajusta este valor según prefieras)
       }
+  
+      // Emitir evento al servidor si es necesario
+      socket.current.emit('playerMove', { x: player.x, y: player.y });
     };
 
     const handleKeyUp = (e) => {
       delete pressedKeys[e.key];
-
+  
       const rawDirection = {
         x: (pressedKeys['ArrowRight'] ? 1 : 0) - (pressedKeys['ArrowLeft'] ? 1 : 0),
         y: (pressedKeys['ArrowDown'] ? 1 : 0) - (pressedKeys['ArrowUp'] ? 1 : 0),
       };
-
-      const normalizedDirection = { ...rawDirection };
-      const magnitude = Math.sqrt(rawDirection.x ** 2 + rawDirection.y ** 2);
-      if (magnitude > 0) {
-        normalizedDirection.x /= magnitude;
-        normalizedDirection.y /= magnitude;
-      }
-
-      player.move(normalizedDirection);
+  
+      // Movemos y actualizamos la dirección del jugador
+      player.move(rawDirection);
       player.setRawDirection(rawDirection);
-
+  
       draw();
-
-      if (normalizedDirection.x === 0 && normalizedDirection.y === 0 && shootingInterval) {
-        clearInterval(shootingInterval);
-        shootingInterval = null;
+  
+      // Si no hay teclas de dirección presionadas, detener el intervalo de disparo
+      if (
+        !pressedKeys['ArrowUp'] &&
+        !pressedKeys['ArrowDown'] &&
+        !pressedKeys['ArrowLeft'] &&
+        !pressedKeys['ArrowRight']
+      ) {
+        if (shootingInterval) {
+          clearInterval(shootingInterval);
+          shootingInterval = null;
+        }
       }
     };
 
@@ -477,6 +510,9 @@ const drawPlayerName = (ctx, canvas) => {
       delete players[data.id];
     });
 
+    gameSocket.current = io('http://localhost:5000');
+    chatSocket.current = new ChatSocket(setChatMessages);
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('resize', resizeCanvas);
@@ -496,10 +532,42 @@ const drawPlayerName = (ctx, canvas) => {
       window.removeEventListener('resize', resizeCanvas);
       if (shootingInterval) clearInterval(shootingInterval);
       if (socket.current) socket.current.disconnect();
+      if (gameSocket.current) gameSocket.current.disconnect();
+      if (chatSocket.current) chatSocket.current.disconnect();
     };
   }, []);
 
-  return <canvas ref={canvasRef} style={{ display: 'block' }} />;
+  return (
+    <>
+      <canvas ref={canvasRef} style={{ display: 'block' }} />
+      <img
+        src={chatIconSrc}
+        alt="frontend\src\components\Maps\chat-icono.png"
+        onClick={handleChatIconClick}
+        style={{ position: 'absolute', top: '10px', right: '10px', width: '40px', height: '40px', cursor: 'pointer', zIndex: '1000' }}
+      />
+      {showChat && (
+        <div className="chat-container" style={{ position: 'absolute', bottom: '10px', right: '10px', width: '300px', backgroundColor: 'rgba(0, 0, 0, 0.7)', color: 'white', padding: '10px', borderRadius: '5px', zIndex: '1000' }}>
+          <div className="chat-messages" style={{ maxHeight: '200px', overflowY: 'auto', marginBottom: '10px' }}>
+            {chatMessages.map((msg, index) => (
+              <div key={index}>
+                <strong>{msg.playerName}: </strong>{msg.message}
+              </div>
+            ))}
+          </div>
+          <form onSubmit={handleChatSubmit} style={{ display: 'flex' }}>
+            <input
+              type="text"
+              value={chatInput}
+              onChange={handleChatInput}
+              style={{ flex: '1', marginRight: '5px', padding: '5px' }}
+            />
+            <button type="submit" style={{ padding: '5px' }}>Send</button>
+          </form>
+        </div>
+      )}
+    </>
+  );
 };
 
 export default GameCanvas;

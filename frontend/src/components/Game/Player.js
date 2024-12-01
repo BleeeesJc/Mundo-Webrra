@@ -48,7 +48,7 @@ class Player {
   }
 
   move(direction) {
-    const moveSpeed = 5;
+    const moveSpeed = 10;
     const { x, y } = direction;
 
     this.x = Math.min(Math.max(0, this.x + x * moveSpeed), this.mapSizeInPixels - this.tileSize);
