@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Player from '../Game/Player';
 import BulletManager from '../Game/BulletManager';
 import Tiles from './Tiles';
@@ -8,8 +8,11 @@ import TileImage2 from './FloresRojas1.png';
 import TileImage3 from './FlorMorada1.png';
 import enemyImageSrc from './candeFuego.png';
 import cactusImageSrc from '../../../src/assets/images/obstaculos/cactus.png';
+import chatIconSrc from './chat-icono.png';
+import ChatSocket from '../Chat/Chat';
 
-import '../../styles/pixel.css'
+import '../../styles/chat.css';
+import '../../styles/pixel.css';
 import upImageSrc from '../../assets/images/characters/DpFinalSolopngArriba.png';
 import downImageSrc from '../../assets/images/characters/DpFinalSolopngAbajo.png';
 import leftImageSrc from '../../assets/images/characters/DpFinalSolopngIzquierda.png';
@@ -43,26 +46,48 @@ const GameCanvas = () => {
   const bulletManager = new BulletManager();
   const tiles = new Tiles([TileImage1, TileImage2, TileImage3]);
 
+  const gameSocket = useRef(null);
+  const chatSocket = useRef(null);
   const socket = useRef(null);
   const players = {};
   const enemies = [];
   const obstacles = []; // Arreglo para los obstáculos
   let shootingInterval = null;
 
+  const [showChat, setShowChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+
   // Initialize player position
   player.x = (tiles.mapMatrix[0].length * TILE_SIZE) / 2;
   player.y = (tiles.mapMatrix.length * TILE_SIZE) / 2;
   const playerName = localStorage.getItem('playerName');
 
+  const handleChatIconClick = () => {
+    setShowChat((prev) => !prev);
+  };
+
+  const handleChatInput = (e) => {
+    setChatInput(e.target.value);
+  };
+
+  const handleChatSubmit = (e) => {
+    e.preventDefault();
+    if (chatInput.trim() !== '') {
+      chatSocket.current.sendMessage(playerName, chatInput);
+      setChatInput('');
+    }
+  };
+
   // Función para dibujar el nombre del jugador
-const drawPlayerName = (ctx, canvas) => {
-  ctx.font = '25px "Press Start 2P"'; // Aumenta el tamaño de la fuente
-  ctx.fillStyle = 'black';
-  const textWidth = ctx.measureText(playerName).width;
-  const xPosition = (canvas.width - textWidth) / 2; // Centrar horizontalmente
-  const yPosition = canvas.height / 2 - 50; // Mover más arriba
-  ctx.fillText(playerName, xPosition, yPosition);
-};
+  const drawPlayerName = (ctx, canvas) => {
+    ctx.font = '25px "Press Start 2P"'; // Aumenta el tamaño de la fuente
+    ctx.fillStyle = 'black';
+    const textWidth = ctx.measureText(playerName).width;
+    const xPosition = (canvas.width - textWidth) / 2; // Centrar horizontalmente
+    const yPosition = canvas.height / 2 - 50; // Mover más arriba
+    ctx.fillText(playerName, xPosition, yPosition);
+  };
 
 
   // Función para generar enemigos con hitbox
@@ -414,6 +439,9 @@ const drawPlayerName = (ctx, canvas) => {
       delete players[data.id];
     });
 
+    gameSocket.current = io('http://localhost:5000');
+    chatSocket.current = new ChatSocket(setChatMessages);
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('resize', resizeCanvas);
@@ -433,10 +461,42 @@ const drawPlayerName = (ctx, canvas) => {
       window.removeEventListener('resize', resizeCanvas);
       if (shootingInterval) clearInterval(shootingInterval);
       if (socket.current) socket.current.disconnect();
+      if (gameSocket.current) gameSocket.current.disconnect();
+      if (chatSocket.current) chatSocket.current.disconnect();
     };
   }, []);
 
-  return <canvas ref={canvasRef} style={{ display: 'block' }} />;
+  return (
+    <>
+      <canvas ref={canvasRef} style={{ display: 'block' }} />
+      <img
+        src={chatIconSrc}
+        alt="frontend\src\components\Maps\chat-icono.png"
+        onClick={handleChatIconClick}
+        style={{ position: 'absolute', top: '10px', right: '10px', width: '40px', height: '40px', cursor: 'pointer', zIndex: '1000' }}
+      />
+      {showChat && (
+        <div className="chat-container" style={{ position: 'absolute', bottom: '10px', right: '10px', width: '300px', backgroundColor: 'rgba(0, 0, 0, 0.7)', color: 'white', padding: '10px', borderRadius: '5px', zIndex: '1000' }}>
+          <div className="chat-messages" style={{ maxHeight: '200px', overflowY: 'auto', marginBottom: '10px' }}>
+            {chatMessages.map((msg, index) => (
+              <div key={index}>
+                <strong>{msg.playerName}: </strong>{msg.message}
+              </div>
+            ))}
+          </div>
+          <form onSubmit={handleChatSubmit} style={{ display: 'flex' }}>
+            <input
+              type="text"
+              value={chatInput}
+              onChange={handleChatInput}
+              style={{ flex: '1', marginRight: '5px', padding: '5px' }}
+            />
+            <button type="submit" style={{ padding: '5px' }}>Send</button>
+          </form>
+        </div>
+      )}
+    </>
+  );
 };
 
 export default GameCanvas;
