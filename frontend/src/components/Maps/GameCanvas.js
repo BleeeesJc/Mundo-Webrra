@@ -263,70 +263,66 @@ const GameCanvas = () => {
 
     const handleKeyDown = (e) => {
       pressedKeys[e.key] = true;
-
+  
       const rawDirection = {
         x: (pressedKeys['ArrowRight'] ? 1 : 0) - (pressedKeys['ArrowLeft'] ? 1 : 0),
         y: (pressedKeys['ArrowDown'] ? 1 : 0) - (pressedKeys['ArrowUp'] ? 1 : 0),
       };
-
-      const normalizedDirection = { ...rawDirection };
-      const magnitude = Math.sqrt(rawDirection.x ** 2 + rawDirection.y ** 2);
-      if (magnitude > 0) {
-        normalizedDirection.x /= magnitude;
-        normalizedDirection.y /= magnitude;
-      }
-
-      player.move(normalizedDirection);
+  
+      // Movemos y actualizamos la dirección del jugador
+      player.move(rawDirection);
       player.setRawDirection(rawDirection);
-
-      draw();
-
-      socket.current.emit('playerMove', { x: player.x, y: player.y });
-
-      if ((rawDirection.x !== 0 || rawDirection.y !== 0) && !shootingInterval) {
+  
+      // Iniciar intervalo de disparo si no está ya iniciado
+      if (!shootingInterval) {
         shootingInterval = setInterval(() => {
-          bulletManager.shoot(
-            player.x,
-            player.y,
-            rawDirection,
-            canvas.width,
-            canvas.height,
-            100,
-            90
-          );
-          socket.current.emit('playerShoot', {
-            x: player.x,
-            y: player.y,
-            direction: rawDirection,
-          });
-          draw();
-        }, 500);
+          // Recalculamos la dirección actual al momento de disparar
+          const shootDirection = { ...player.rawDirection };
+  
+          // Si el jugador no se está moviendo, no disparamos
+          if (shootDirection.x !== 0 || shootDirection.y !== 0) {
+            bulletManager.shoot(
+              player.x,
+              player.y,
+              shootDirection,
+              canvas.width,
+              canvas.height,
+              100,
+              90
+            );
+          }
+        }, 200); // Dispara cada 200 ms (ajusta este valor según prefieras)
       }
+  
+      // Emitir evento al servidor si es necesario
+      socket.current.emit('playerMove', { x: player.x, y: player.y });
     };
 
     const handleKeyUp = (e) => {
       delete pressedKeys[e.key];
-
+  
       const rawDirection = {
         x: (pressedKeys['ArrowRight'] ? 1 : 0) - (pressedKeys['ArrowLeft'] ? 1 : 0),
         y: (pressedKeys['ArrowDown'] ? 1 : 0) - (pressedKeys['ArrowUp'] ? 1 : 0),
       };
-
-      const normalizedDirection = { ...rawDirection };
-      const magnitude = Math.sqrt(rawDirection.x ** 2 + rawDirection.y ** 2);
-      if (magnitude > 0) {
-        normalizedDirection.x /= magnitude;
-        normalizedDirection.y /= magnitude;
-      }
-
-      player.move(normalizedDirection);
+  
+      // Movemos y actualizamos la dirección del jugador
+      player.move(rawDirection);
       player.setRawDirection(rawDirection);
-
+  
       draw();
-
-      if (normalizedDirection.x === 0 && normalizedDirection.y === 0 && shootingInterval) {
-        clearInterval(shootingInterval);
-        shootingInterval = null;
+  
+      // Si no hay teclas de dirección presionadas, detener el intervalo de disparo
+      if (
+        !pressedKeys['ArrowUp'] &&
+        !pressedKeys['ArrowDown'] &&
+        !pressedKeys['ArrowLeft'] &&
+        !pressedKeys['ArrowRight']
+      ) {
+        if (shootingInterval) {
+          clearInterval(shootingInterval);
+          shootingInterval = null;
+        }
       }
     };
 
@@ -394,14 +390,6 @@ const GameCanvas = () => {
     return () => {
       clearInterval(spawnEnemiesInterval);
       clearInterval(spawnObstaclesInterval);
-    };
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-      window.removeEventListener('resize', resizeCanvas);
-      if (shootingInterval) clearInterval(shootingInterval);
-      if (socket.current) socket.current.disconnect();
     };
   }, []);
 
