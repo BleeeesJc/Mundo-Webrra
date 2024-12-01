@@ -6,7 +6,10 @@ import io from 'socket.io-client';
 import TileImage1 from './FloresBlancas1.png';
 import TileImage2 from './FloresRojas1.png';
 import TileImage3 from './FlorMorada1.png';
+import enemyImageSrc from './candeFuego.png';
+import cactusImageSrc from '../../../src/assets/images/obstaculos/cactus.png';
 
+import '../../styles/pixel.css'
 import upImageSrc from '../../assets/images/characters/DpFinalSolopngArriba.png';
 import downImageSrc from '../../assets/images/characters/DpFinalSolopngAbajo.png';
 import leftImageSrc from '../../assets/images/characters/DpFinalSolopngIzquierda.png';
@@ -49,6 +52,122 @@ const GameCanvas = () => {
   // Initialize player position
   player.x = (tiles.mapMatrix[0].length * TILE_SIZE) / 2;
   player.y = (tiles.mapMatrix.length * TILE_SIZE) / 2;
+  const playerName = localStorage.getItem('playerName');
+
+  // Función para dibujar el nombre del jugador
+const drawPlayerName = (ctx, canvas) => {
+  ctx.font = '25px "Press Start 2P"'; // Aumenta el tamaño de la fuente
+  ctx.fillStyle = 'black';
+  const textWidth = ctx.measureText(playerName).width;
+  const xPosition = (canvas.width - textWidth) / 2; // Centrar horizontalmente
+  const yPosition = canvas.height / 2 - 50; // Mover más arriba
+  ctx.fillText(playerName, xPosition, yPosition);
+};
+
+
+  // Función para generar enemigos con hitbox
+  const spawnEnemy = () => {
+    const distance = 300;
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * (MAX_ENEMY_SPEED - MIN_ENEMY_SPEED) + MIN_ENEMY_SPEED;
+    const enemy = {
+      x: player.x + distance * Math.cos(angle),
+      y: player.y + distance * Math.sin(angle),
+      width: 50,
+      height: 50,
+      speed: speed,
+      hitbox: {
+        x: 0,
+        y: 0,
+        width: 50,
+        height: 50,
+      },
+    };
+    enemies.push(enemy);
+  };
+
+  // Función para generar obstáculos
+  const spawnObstacle = () => {
+    const distance = 400;
+    const angle = Math.random() * Math.PI * 2;
+    const obstacle = {
+      x: player.x + distance * Math.cos(angle),
+      y: player.y + distance * Math.sin(angle),
+      width: 50,
+      height: 100,
+      hitbox: {
+        x: 0,
+        y: 0,
+        width: 50,
+        height: 100,
+      },
+    };
+    obstacles.push(obstacle);
+  };
+
+  const updateEnemies = () => {
+    const enemiesToRemove = [];
+    const bulletsToRemove = [];
+
+    enemies.forEach((enemy, enemyIndex) => {
+      const dx = player.x - enemy.x;
+      const dy = player.y - enemy.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      const dirX = dx / distance;
+      const dirY = dy / distance;
+
+      enemy.x += dirX * enemy.speed;
+      enemy.y += dirY * enemy.speed;
+
+      enemy.hitbox.x = enemy.x - enemy.width / 2;
+      enemy.hitbox.y = enemy.y - enemy.height / 2;
+
+      if (checkCollision(enemy.hitbox, player.getHitbox())) {
+        console.log("Colisión con el jugador");
+      }
+
+      bulletManager.bullets.forEach((bullet, bulletIndex) => {
+        if (checkCollision(enemy.hitbox, bullet.hitbox)) {
+          console.log("Enemigo eliminado por bala");
+          enemiesToRemove.push(enemyIndex);
+          bulletsToRemove.push(bulletIndex);
+        }
+      });      
+    });
+
+    enemiesToRemove.forEach((enemyIndex) => {
+      enemies.splice(enemyIndex, 1);
+    });
+
+    bulletsToRemove.forEach((bulletIndex) => {
+      bulletManager.bullets.splice(bulletIndex, 1);
+    });
+  };
+
+  const updateObstacles = () => {
+    obstacles.forEach((obstacle) => {
+      obstacle.hitbox.x = obstacle.x - obstacle.width / 2;
+      obstacle.hitbox.y = obstacle.y - obstacle.height / 2;
+
+      if (checkCollision(obstacle.hitbox, player.getHitbox())) {
+        console.log("Colisión con obstáculo");
+        player.x -= player.rawDirection.x * 10; // Retroceder al jugador al detectar colisión
+        player.y -= player.rawDirection.y * 10;
+      }
+    });
+  };
+
+  const checkCollision = (rect1, rect2) => {
+    if (!rect1 || !rect2) return false;
+
+    return (
+      rect1.x < rect2.x + rect2.width &&
+      rect1.x + rect1.width > rect2.x &&
+      rect1.y < rect2.y + rect2.height &&
+      rect1.y + rect1.height > rect2.y
+    );
+  };
 
   useEffect(() => {
     const pressedKeys = {};
@@ -64,10 +183,12 @@ const GameCanvas = () => {
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
+      tiles.draw(ctx, player.x, player.y, canvas.width, canvas.height);
+
       // Dibujar mapa
       tiles.draw(ctx, player.x, player.y, canvas.width, canvas.height);
-    
+
       // Dibujar jugador en el centro del canvas
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
@@ -89,16 +210,71 @@ const GameCanvas = () => {
         player.hitboxWidth,
         player.hitboxHeight
       );
-    
+      ctx.strokeStyle = 'red';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(
+        centerX - player.hitboxWidth / 2,
+        centerY - player.hitboxHeight / 2,
+        player.hitboxWidth,
+        player.hitboxHeight
+      );
+
+      enemies.forEach((enemy) => {
+        const relativeX = centerX + (enemy.x - player.x);
+        const relativeY = centerY + (enemy.y - player.y);
+
+        ctx.drawImage(
+          enemyImage,
+          relativeX - enemy.width / 2,
+          relativeY - enemy.height / 2,
+          enemy.width,
+          enemy.height
+        );
+
+        ctx.strokeStyle = "red";
+        ctx.strokeRect(
+          relativeX - enemy.width / 2,
+          relativeY - enemy.height / 2,
+          enemy.width,
+          enemy.height
+        );
+      });
+
+      obstacles.forEach((obstacle) => {
+        const relativeX = centerX + (obstacle.x - player.x);
+        const relativeY = centerY + (obstacle.y - player.y);
+
+        ctx.drawImage(
+          cactusImage,
+          relativeX - obstacle.width / 2,
+          relativeY - obstacle.height / 2,
+          obstacle.width,
+          obstacle.height
+        );
+
+        ctx.strokeStyle = "green";
+        ctx.strokeRect(
+          relativeX - obstacle.width / 2,
+          relativeY - obstacle.height / 2,
+          obstacle.width,
+          obstacle.height
+        );
+      });
+
+      bulletManager.drawBullets(ctx, { x: player.x, y: player.y });
+
+      // Dibujar nombre del jugador
+      drawPlayerName(ctx, canvas);
+
       // Dibujar balas
       bulletManager.drawBullets(ctx, { x: player.x, y: player.y });
-    
+
       // Dibujar otros jugadores
       for (const id in players) {
         const otherPlayer = players[id];
         const relativeX = centerX + (otherPlayer.x - player.x);
         const relativeY = centerY + (otherPlayer.y - player.y);
-    
+
         const otherPlayerImage = images.down; // Imagen por defecto, cambiar según sea necesario
         const otherPlayerWidth = 100;
         const otherPlayerHeight = 90;
@@ -114,13 +290,13 @@ const GameCanvas = () => {
 
     const handleKeyDown = (e) => {
       pressedKeys[e.key] = true;
-    
+
       // Direcciones basadas en las teclas presionadas
       const rawDirection = {
         x: (pressedKeys['ArrowRight'] ? 1 : 0) - (pressedKeys['ArrowLeft'] ? 1 : 0),
         y: (pressedKeys['ArrowDown'] ? 1 : 0) - (pressedKeys['ArrowUp'] ? 1 : 0),
       };
-    
+
       // Normalizar la dirección para el movimiento
       const normalizedDirection = { ...rawDirection };
       const magnitude = Math.sqrt(rawDirection.x ** 2 + rawDirection.y ** 2);
@@ -130,7 +306,7 @@ const GameCanvas = () => {
       }
 
       player.move(normalizedDirection);
-    
+
       // Actualizar la dirección "sin normalizar" para la imagen
       player.setRawDirection(rawDirection);
 
