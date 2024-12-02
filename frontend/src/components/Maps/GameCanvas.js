@@ -7,7 +7,7 @@ import TileImage1 from './FloresBlancas1.png';
 import TileImage2 from './FloresRojas1.png';
 import TileImage3 from './FlorMorada1.png';
 import enemyImageSrc from './candeFuego.png';
-import cactusImageSrc from '../../../src/assets/images/obstaculos/cactus.png';
+import cactusImageSrc from '../../../src/assets/images/obstaculos/muneco.png';
 
 import upImageSrc from '../../assets/images/characters/DpFinalSolopngArriba.png';
 import downImageSrc from '../../assets/images/characters/DpFinalSolopngAbajo.png';
