@@ -1,22 +1,27 @@
-// models/Player.js
+// models/Map.js
 const mongoose = require('mongoose');
 
-const playerSchema = new mongoose.Schema({
+const mapSchema = new mongoose.Schema({
   _id: { 
     type: mongoose.Schema.Types.ObjectId, 
     required: true, 
     default: mongoose.Types.ObjectId 
   },
-  nombre: { 
+  tile: { 
     type: String, 
     required: true, 
     trim: true 
   },
-  puntuacion: { 
+  alto: { 
+    type: Number, 
+    required: true, 
+    min: 0 
+  },
+  ancho: { 
     type: Number, 
     required: true, 
     min: 0 
   }
 });
 
-module.exports = mongoose.model('Player', playerSchema);
+module.exports = mongoose.model('Map', mapSchema);
